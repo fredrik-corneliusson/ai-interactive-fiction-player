@@ -42,6 +42,7 @@ Press enter to trigger AI to make decision.
 
 The game has a minimal set of commands that can be used to show current "memory" used by AI player:
 
+ * r # - auto run # steps
  * m - show memory
  * v - show variables and current id of game story
  * q - exit game
