@@ -110,12 +110,26 @@ def main(debug=False):
 
     out("Morsning Korsning barnförlossning! Nu kör vi!")
     christers_val = None
+    runs = 0
     while True:
-        out('-'*max_columns)
-        user_input = input("> ")
-        out('-'*max_columns)
+        if runs > 0:
+            print(f"Autorun {runs}")
+            user_input = ''
+            runs -= 1
+        else:
+            out('-'*max_columns)
+            user_input = input("> ")
+            out('-'*max_columns)
         if user_input == 'q':
             break
+        elif user_input.startswith('r '):
+            try:
+                runs = int(user_input.split()[-1])
+            except ValueError as e:
+                print(e)
+                continue
+            user_input = ''
+            continue
         elif user_input == 'm':
             pprint(conversation.memory.entity_store.store)
             continue
@@ -124,7 +138,7 @@ def main(debug=False):
             pprint(ge.game.vars)
             continue
         elif user_input != '':
-            out("SYNTAX ERROR!, choose one of:\n v - show variables\n m - show entity memory\n q - quit\nor just press enter to continue game.")
+            out("SYNTAX ERROR!, choose one of:\n v - show variables\n m - show entity memory\n r # - auto run # steps.\nq - quit\nor just press enter to continue game.")
             continue
         text = str(ge.next(christers_val))
         out(text)
