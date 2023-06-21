@@ -1,0 +1,7 @@
+BeautifulSoup4
+lxml
+click
+
+langchain
+openai
+python-dotenv
