@@ -74,6 +74,8 @@ API key; see `.env.example` for optional settings.
 | `--retries` | `AI_RETRIES` | 2 additional attempts per decision |
 | `--max-output-tokens` | `AI_MAX_OUTPUT_TOKENS` | 2048 (includes reasoning tokens) |
 | `--context-budget` | `AI_CONTEXT_BUDGET` | 64000 conservative input token estimate |
+| `--request-budget` | `AI_REQUEST_BUDGET` | 100 attempts per saved run |
+| `--token-budget` | `AI_TOKEN_BUDGET` | 1000000 tokens per saved run |
 
 Supported model IDs are explicitly `gpt-6-luna` and `gpt-6.1-sol`; there is no
 automatic fallback. Sol requires `low` reasoning or higher. No temperature or
@@ -81,8 +83,8 @@ other sampling override is sent. Sol's account access has not been live-tested.
 
 Full-history mode sends every encountered observation and successfully applied
 decision. It does not send hidden variables or unvisited passages. Responses use
-`store=False`, and no server-side response chain is used. History currently lasts
-only for the running process; save/resume belongs to CP3 and hybrid memory to CP4.
+`store=False`, and no server-side response chain is used. History and game state
+are saved locally after each successful action. Hybrid memory belongs to CP4.
 
 The context budget uses a conservative UTF-8 byte estimate plus schema/envelope
 allowance, rather than an exact provider token count. If exceeded, the player
@@ -120,7 +122,55 @@ AI play:
 - `r #`: automatically run the requested number of steps.
 - `m`: show the complete encountered history and committed decisions.
 - `v`: show variables and the current passage.
+- `u`: show cumulative request, token, and latency accounting.
+- `s`: explicitly save the current checkpoint (actions already save automatically).
 - `q`: quit.
+
+## Saved runs and budgets
+
+AI play prints a run ID and stores its story snapshot, settings, persona, complete
+encountered transcript, rendered passage, variables, and random state in
+`data/runs.sqlite3`. This database and its journals are ignored by Git. Select
+another path with `--database`; ignore any custom database you place in the repo.
+No new dependency is needed: persistence uses Python's SQLite library.
+
+```powershell
+.\.venv\Scripts\python.exe ai_player.py --story-file data/del1.html --max-steps 3 --request-budget 10 --token-budget 100000
+.\.venv\Scripts\python.exe ai_player.py --list-runs
+.\.venv\Scripts\python.exe ai_player.py --run-info RUN_ID
+.\.venv\Scripts\python.exe ai_player.py --resume RUN_ID --max-steps 3
+```
+
+Replace `RUN_ID` with the printed ID. Listing and inspection require no API key or
+network. Resume uses the saved configuration and embedded story, even if the
+original HTML has changed or disappeared; omit story, seed, model, and budget
+options. Environment defaults affect new runs only. The API key is read from the
+current environment and is never saved in the database. A completed run resumes
+without applying its last action again or calling the model.
+
+Request and token budgets cover the whole saved run, including retries and
+resumes. Before each attempt the player reserves the conservative input estimate
+plus the maximum output allowance. Reported provider usage replaces that
+reservation when available; otherwise the reservation remains charged.
+`known_tokens` is reported usage, `budget_tokens` includes unknown-usage
+reservations, and `unknown_usage_requests` makes the difference explicit.
+Latency is measured per attempt, excluding retry backoff. No monetary estimate
+or pricing assumption is used. The token budget is conservative local accounting,
+not an exact provider billing cap; it can stop earlier than actual usage requires.
+
+An action, observation, and checkpoint commit together. The append-only event log
+records every attempt, including refusals, invalid decisions, and failures, with
+safe categories rather than provider error bodies. Competing sessions are rejected
+before sending another request or overwriting newer state.
+
+A hard interruption can leave an attempt with unknown outcome. Resume blocks
+further requests until you inspect it with `--run-info` and explicitly acknowledge
+it using `--resume RUN_ID --acknowledge-pending`. Do this after the original
+process has stopped. Its token reservation remains charged; no action is replayed.
+Known latency totals exclude interrupted attempts whose duration is unknown.
+The database contains story and transcript text and is ordinary local SQLite,
+without encryption or a tamper-proof audit guarantee. Back it up after closing
+the player so its SQLite journal is flushed.
 
 ## Repository notes
 
@@ -139,7 +189,9 @@ implementation checkpoints, acceptance criteria, and progress log.
   games, including nested conditionals, arithmetic, and random outcomes. Browser
   save/load/restart controls and external score pages are unavailable; `v` shows
   notices. Other unsupported syntax raises a passage-specific error.
-- Persistence and a durable event log are the next checkpoint.
+- `run_store.py` owns SQLite checkpoints, append-only events, run isolation, and
+  persisted budget accounting. See [CP3_VALIDATION.md](CP3_VALIDATION.md).
+- Hybrid memory is the next checkpoint.
 
 ## Verification
 

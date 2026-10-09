@@ -223,7 +223,7 @@ class ConsoleTests(unittest.TestCase):
             model = Mock()
             model.invoke.return_value = result()
             with patch('ai_player.load_dotenv'), patch.dict(os.environ, {'OPENAI_API_KEY': 'offline-test-key', 'OPENAI_MODEL': 'gpt-6.1-sol', 'OPENAI_REASONING_EFFORT': 'none'}), patch('player.create_model', return_value=model) as create:
-                outcome = CliRunner().invoke(cli, ['--story-file', str(story), '--model', 'gpt-6-luna', '--max-steps', '1'])
+                outcome = CliRunner().invoke(cli, ['--story-file', str(story), '--database', str(Path(directory) / 'runs.sqlite3'), '--model', 'gpt-6-luna', '--max-steps', '1'])
             self.assertEqual(outcome.exit_code, 0, outcome.output)
             self.assertEqual(create.call_args.args[0].model, 'gpt-6-luna')
             self.assertEqual(create.call_args.args[0].reasoning, 'none')

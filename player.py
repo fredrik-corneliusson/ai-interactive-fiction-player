@@ -43,6 +43,8 @@ class Settings(BaseModel):
     retries: int = Field(default=2, ge=0, le=5)
     max_output_tokens: int = Field(default=2048, ge=128, le=16384)
     context_budget: int = Field(default=64000, ge=1, le=900000)
+    request_budget: int = Field(default=100, ge=1)
+    token_budget: int = Field(default=1000000, ge=1)
 
     def check_compatibility(self):
         if self.model == "gpt-6.1-sol" and self.reasoning == "none":
@@ -58,6 +60,10 @@ class ContextBudgetExceeded(PlayerError):
 
 
 class Refusal(PlayerError):
+    pass
+
+
+class BudgetExceeded(PlayerError):
     pass
 
 
@@ -95,7 +101,7 @@ def input_token_upper_bound(messages):
 
 
 class Player:
-    def __init__(self, engine, settings=None, model=None, *, sleep=time.sleep):
+    def __init__(self, engine, settings=None, model=None, *, sleep=time.sleep, persona=PERSONA):
         self.engine = engine
         self.settings = settings or Settings()
         self.settings.check_compatibility()
@@ -103,55 +109,91 @@ class Player:
         self.sleep = sleep
         self.history = [HumanMessage(content=engine.next())]
         self.last_call = None
+        self.persona = persona
+        self.session = None
+        self.calls = []
 
     def messages(self):
-        return [SystemMessage(content=PERSONA), *self.history]
+        return [SystemMessage(content=self.persona), *self.history]
 
     def _decision(self, messages):
         if self.model is None:
             self.model = create_model(self.settings)
         for attempt in range(self.settings.retries + 1):
+            reservation = input_token_upper_bound(messages) + self.settings.max_output_tokens
+            if self.session:
+                request_id = self.session.begin_request(self.settings, reservation, attempt + 1)
+            else:
+                charged = sum(call.get('usage', {}).get('total_tokens', call['token_reservation'])
+                              if call.get('usage') else call['token_reservation'] for call in self.calls)
+                if len(self.calls) >= self.settings.request_budget or charged + reservation > self.settings.token_budget:
+                    raise BudgetExceeded('Run request/token budget exhausted. No request sent.')
+                request_id = None
             started = time.monotonic()
+            metadata = {'model': self.settings.model, 'status': None, 'usage': None,
+                        'attempt': attempt + 1, 'category': 'unexpected_error'}
             try:
-                result = self.model.invoke(messages)
-            except (openai.APIConnectionError, openai.RateLimitError, openai.InternalServerError) as error:
-                if attempt < self.settings.retries:
-                    self.sleep(min(2 ** attempt, 4))
-                    continue
-                raise PlayerError("OpenAI connection, timeout, rate limit, or server failure; retries exhausted. No action applied.") from error
-            except openai.APIStatusError as error:
-                raise PlayerError(f"OpenAI rejected the request (HTTP {error.status_code}). Check model access, credentials, and settings. No action applied.") from error
-            except (ValueError, ValidationError) as error:
-                # Do not expose provider payloads, prompts, or credentials.
-                if attempt < self.settings.retries:
-                    continue
-                raise PlayerError("OpenAI response could not be decoded; retries exhausted. No action applied.") from error
-            raw = result.get("raw")
-            if not isinstance(raw, AIMessage):
-                raise PlayerError("Missing response metadata. No action applied.")
-            self.last_call = {
-                "model": raw.response_metadata.get("model_name", self.settings.model),
-                "status": raw.response_metadata.get("status"),
-                "usage": raw.usage_metadata,
-                "seconds": round(time.monotonic() - started, 3),
-                "attempt": attempt + 1,
-            }
-            blocks = raw.content if isinstance(raw.content, list) else []
-            if raw.additional_kwargs.get("refusal") or any(isinstance(block, dict) and block.get("type") == "refusal" for block in blocks):
-                raise Refusal("The model declined this passage. No action applied; autorun stopped.")
-            if raw.response_metadata.get("status") != "completed":
-                raise PlayerError("OpenAI returned an incomplete response. Increase the output limit or change reasoning settings. No action applied.")
-            try:
-                if result.get("parsing_error") or result.get("parsed") is None:
-                    raise ValueError("Missing or malformed structured response")
-                decision = Decision.model_validate(result["parsed"])
-                if not decision.character_comment.strip():
-                    raise ValueError("Empty character comment")
-                self.engine.validate_choice(decision.choice)
-                return decision
-            except (ValueError, ValidationError) as error:
-                if attempt == self.settings.retries:
-                    raise PlayerError("Invalid structured decision or unavailable choice; retries exhausted. No action applied.") from error
+                try:
+                    result = self.model.invoke(messages)
+                except (openai.APIConnectionError, openai.RateLimitError, openai.InternalServerError) as error:
+                    metadata['category'] = ('connection_or_timeout' if isinstance(error, openai.APIConnectionError)
+                                            else 'rate_limit' if isinstance(error, openai.RateLimitError) else 'server_error')
+                    if attempt < self.settings.retries:
+                        retry_delay = min(2 ** attempt, 4)
+                        # Sleep after recording this failed attempt, below.
+                    else:
+                        raise PlayerError('OpenAI connection, timeout, rate limit, or server failure; retries exhausted. No action applied.') from error
+                except openai.APIStatusError as error:
+                    metadata['category'] = 'http_error'
+                    metadata['http_status'] = error.status_code
+                    raise PlayerError(f'OpenAI rejected the request (HTTP {error.status_code}). Check model access, credentials, and settings. No action applied.') from error
+                except (ValueError, ValidationError) as error:
+                    metadata['category'] = 'decode_error'
+                    if attempt == self.settings.retries:
+                        raise PlayerError('OpenAI response could not be decoded; retries exhausted. No action applied.') from error
+                    retry_delay = 0
+                except Exception as error:
+                    raise PlayerError('Unexpected model adapter failure. No action applied; inspect safe run telemetry.') from error
+                except KeyboardInterrupt:
+                    metadata['category'] = 'interrupted'
+                    raise
+                else:
+                    raw = result.get('raw') if isinstance(result, dict) else None
+                    if not isinstance(raw, AIMessage):
+                        metadata['category'] = 'missing_metadata'
+                        raise PlayerError('Missing response metadata. No action applied.')
+                    metadata.update(model=raw.response_metadata.get('model_name', self.settings.model),
+                                    status=raw.response_metadata.get('status'), usage=raw.usage_metadata)
+                    blocks = raw.content if isinstance(raw.content, list) else []
+                    if raw.additional_kwargs.get('refusal') or any(isinstance(block, dict) and block.get('type') == 'refusal' for block in blocks):
+                        metadata['category'] = 'refusal'
+                        raise Refusal('The model declined this passage. No action applied; autorun stopped.')
+                    if raw.response_metadata.get('status') != 'completed':
+                        metadata['category'] = 'incomplete'
+                        raise PlayerError('OpenAI returned an incomplete response. Increase the output limit or change reasoning settings. No action applied.')
+                    try:
+                        if result.get('parsing_error') or result.get('parsed') is None:
+                            raise ValueError('Missing or malformed structured response')
+                        decision = Decision.model_validate(result['parsed'])
+                        if not decision.character_comment.strip():
+                            raise ValueError('Empty character comment')
+                        self.engine.validate_choice(decision.choice)
+                    except (ValueError, ValidationError) as error:
+                        metadata['category'] = 'invalid_decision'
+                        if attempt == self.settings.retries:
+                            raise PlayerError('Invalid structured decision or unavailable choice; retries exhausted. No action applied.') from error
+                        retry_delay = 0
+                    else:
+                        metadata['category'] = 'valid_decision'
+                        return decision
+            finally:
+                metadata['seconds'] = round(time.monotonic() - started, 3)
+                self.last_call = metadata
+                self.calls.append({**metadata, 'token_reservation': reservation})
+                if self.session:
+                    self.session.finish_request(request_id, metadata)
+            if retry_delay:
+                self.sleep(retry_delay)
         raise AssertionError("Unreachable")
 
     def step(self):
@@ -167,9 +209,17 @@ class Player:
         decision = self._decision(messages)
         # The engine's transaction can still fail (unsupported destination syntax).
         # Record a decision only after its action has succeeded.
-        observation = self.engine.next(decision.choice)
-        self.history.extend([
-            AIMessage(content=decision.model_dump_json()),
-            HumanMessage(content=observation),
-        ])
+        from run_store import snapshot, restore
+        previous = snapshot(self)
+        try:
+            observation = self.engine.next(decision.choice)
+            self.history.extend([
+                AIMessage(content=decision.model_dump_json()),
+                HumanMessage(content=observation),
+            ])
+            if self.session:
+                self.session.checkpoint(self, decision)
+        except BaseException:
+            restore(self, previous)
+            raise
         return decision

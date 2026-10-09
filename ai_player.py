@@ -1,5 +1,6 @@
 import json
 import os
+import sqlite3
 from pathlib import Path
 import textwrap
 
@@ -8,6 +9,7 @@ from dotenv import load_dotenv
 
 from game import Game, GameEngine, load_game_data
 from player import Player, PlayerError, Settings
+from run_store import RunStore, StoreError
 
 
 def out(*messages):
@@ -42,6 +44,15 @@ def play(engine, player, *, max_steps=None, debug=False):
             for notice in engine.game.notices:
                 out(notice)
             continue
+        if user_input == 'u':
+            if player.session:
+                out(json.dumps(player.session.store.usage(player.session.run_id), ensure_ascii=False))
+            continue
+        if user_input == 's':
+            if player.session:
+                player.session.checkpoint(player)
+                out(f'Saved run {player.session.run_id}')
+            continue
         if user_input.startswith("r "):
             try:
                 runs = int(user_input.split()[-1])
@@ -52,11 +63,11 @@ def play(engine, player, *, max_steps=None, debug=False):
                 out(error)
             continue
         if user_input != "":
-            out("Choose v, m, r #, q, or press Enter to continue.")
+            out("Choose v, m, u, s, r #, q, or press Enter to continue.")
             continue
         try:
             decision = player.step()
-        except (PlayerError, ValueError) as error:
+        except (PlayerError, StoreError, ValueError) as error:
             runs = 0
             if max_steps is not None:
                 raise
@@ -85,31 +96,68 @@ def play(engine, player, *, max_steps=None, debug=False):
 @click.option('--max-output-tokens', type=click.IntRange(min=128, max=16384))
 @click.option('--context-budget', type=click.IntRange(min=1, max=900000), help='Conservative input token budget; stops without truncating history.')
 @click.option('--max-steps', type=click.IntRange(min=1, max=1000), help='Run at most this many decisions without interactive prompts.')
-def cli(debug, story_file, seed, max_steps, **options):
+@click.option('--request-budget', type=click.IntRange(min=1), help='Total attempts allowed across this run, including retries and resumes.')
+@click.option('--token-budget', type=click.IntRange(min=1), help='Run token allowance; reserve input estimate plus maximum output before each attempt.')
+@click.option('--database', type=click.Path(dir_okay=False, path_type=Path), default=Path('data/runs.sqlite3'), show_default=True)
+@click.option('--resume', metavar='RUN_ID', help='Resume a checkpoint with its saved story, persona, settings, and budgets.')
+@click.option('--list-runs', is_flag=True, help='List locally saved runs without making API calls.')
+@click.option('--run-info', metavar='RUN_ID', help='Show usage and per-attempt telemetry without making API calls.')
+@click.option('--acknowledge-pending', is_flag=True, help='On resume, acknowledge an interrupted request; retain its unknown-usage reservation.')
+def cli(debug, story_file, seed, max_steps, database, resume, list_runs, run_info, acknowledge_pending, **options):
     load_dotenv(Path(__file__).with_name('.env'), override=False)
     environment = {
         'model': 'OPENAI_MODEL', 'memory_model': 'OPENAI_MEMORY_MODEL',
         'reasoning': 'OPENAI_REASONING_EFFORT', 'memory_mode': 'AI_MEMORY_MODE',
         'timeout': 'AI_TIMEOUT', 'retries': 'AI_RETRIES',
         'max_output_tokens': 'AI_MAX_OUTPUT_TOKENS', 'context_budget': 'AI_CONTEXT_BUDGET',
+        'request_budget': 'AI_REQUEST_BUDGET', 'token_budget': 'AI_TOKEN_BUDGET',
     }
     values = {key: value if value is not None else os.getenv(environment[key]) for key, value in options.items()}
     values = {key: value for key, value in values.items() if value is not None}
+    store = None
     try:
-        settings = Settings(**values)
-        settings.check_compatibility()
-        engine = GameEngine(Game(load_game_data(game_file=story_file), seed=seed))
+        if sum(bool(mode) for mode in (resume, list_runs, run_info)) > 1:
+            raise ValueError('Choose one of --resume, --list-runs, or --run-info.')
+        if acknowledge_pending and not resume:
+            raise ValueError('--acknowledge-pending requires --resume.')
+        if (resume or list_runs or run_info) and (story_file or seed is not None or any(v is not None for v in options.values())):
+            raise ValueError('Saved-run commands use saved configuration; omit story, seed, and model/budget overrides.')
+        store = RunStore(database)
+        if list_runs:
+            out(json.dumps(store.list_runs(), ensure_ascii=False, indent=2))
+            return
+        if run_info:
+            out(json.dumps(store.report(run_info), ensure_ascii=False, indent=2))
+            return
+        if resume:
+            player = store.resume(resume)
+            if acknowledge_pending:
+                player.session.acknowledge_pending()
+            engine = player.engine
+        else:
+            settings = Settings(**values)
+            settings.check_compatibility()
+            engine = GameEngine(Game(load_game_data(game_file=story_file), seed=seed))
+            player = Player(engine, settings)
         if engine.running and not os.getenv('OPENAI_API_KEY', '').strip():
             raise PlayerError('OPENAI_API_KEY is missing. Add it to .env or the process environment.')
-        player = Player(engine, settings)
+        if not resume:
+            store.create(player)
+        out(f'Run ID: {player.session.run_id}; database: {database}')
         play(engine, player, max_steps=max_steps, debug=debug)
-    except (PlayerError, ValueError, OSError) as error:
+        out(json.dumps(store.usage(player.session.run_id), ensure_ascii=False))
+    except sqlite3.Error as error:
+        raise click.ClickException('Local run database operation failed. Check its path, permissions, and format.') from error
+    except (PlayerError, StoreError, ValueError, OSError) as error:
         # Pydantic errors can echo input values; summarize configuration failures.
         from pydantic import ValidationError
         if isinstance(error, ValidationError):
             fields = ', '.join(str(item['loc'][0]) for item in error.errors())
             raise click.ClickException(f'Invalid configuration fields: {fields}') from error
         raise click.ClickException(str(error)) from error
+    finally:
+        if store:
+            store.close()
 
 
 if __name__ == '__main__':

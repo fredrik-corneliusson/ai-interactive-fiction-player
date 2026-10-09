@@ -2,8 +2,8 @@
 
 Created: 2026-10-10 (Europe/Stockholm)
 Last updated: 2026-10-10
-Status: CP1 and CP2 complete for their documented scopes.
-Next checkpoint: CP3 — persistence, event logging, and observability.
+Status: CP1, CP2, and CP3 complete for their documented scopes.
+Next checkpoint: CP4 — hybrid memory, extraction, and retrieval.
 
 ## Purpose and scope
 
@@ -157,7 +157,7 @@ event log even if a character memory policy intentionally forgets information.
 | CP0 — environment and design | Complete | Local environment, downloaded stories, this plan |
 | CP1 — engine and fixtures | Complete | Reliable turn behavior and representative story fixtures |
 | CP2 — modern full-history player | Complete | Responses API, explicit configuration, structured decisions |
-| CP3 — persistence and observability | Not started | Save/resume, event log, usage and latency reporting |
+| CP3 — persistence and observability | Complete | Save/resume, event log, usage and latency reporting |
 | CP4 — hybrid memory | Not started | Batched extraction, retrieval, inspectable derived memories |
 | CP5 — comparative evaluation | Not started | Model/memory comparison and justified defaults |
 | CP6 — documentation and handoff | Not started | Reproducible setup, CLI guide, validated dependency lock |
@@ -279,9 +279,23 @@ locally owned full history. Live access to `gpt-6-luna` was confirmed. Sol remai
 an explicit, untested comparison option. The CP2 Git checkpoint on
 `development/modernize-ai-player` is titled `Complete CP2 Responses and full-history milestone`.
 
-Next action: implement CP3 SQLite run storage and append-only events, save/resume,
-per-attempt usage accounting, and bounded-run budgets. Retain the context and
-transaction guarantees tested in CP2. Hybrid memory remains scheduled for CP4.
+CP3 completed on 2026-10-10. See [CP3_VALIDATION.md](CP3_VALIDATION.md) for the
+persistence schema, budget policy, crash recovery, and verification. SQLite stores
+independent run checkpoints and append-only encountered/attempt events. Resume
+restores rendered state and RNG without replaying macros. Story snapshots preserve
+run identity after source changes; saved settings and persona remain fixed across
+resumes. Requests are reserved before invocation and all attempts count toward
+persisted request/token budgets, including unknown usage. Monetary estimates are
+deferred, so no pricing assumption is needed. Stale sessions are rejected and
+interrupted requests require explicit acknowledgment. All 48 offline tests and
+pip check pass; no additional paid API requests were made. The CP3 Git checkpoint
+is titled `Complete CP3 persistence and observability milestone`.
+
+Next action: implement CP4 source-linked hybrid memory, batched extraction,
+retrieval, and inspectable selected records. Use encountered observations in the
+event log as sources; exclude hidden state and unvisited story text, and preserve
+the full transcript and CP3 persistence/budget guarantees. Full-history remains
+the comparison baseline.
 
 | Date | Checkpoint | Work and evidence | Remaining work |
 | --- | --- | --- | --- |
@@ -290,6 +304,7 @@ transaction guarantees tested in CP2. Hybrid memory remains scheduled for CP4.
 | 2026-10-10 | CP0 | Reviewed current OpenAI/LangChain documentation and local memory implementation. Recorded design, checkpoints, and acceptance criteria. No modernization code or paid API calls made during planning. | Start CP1, then establish the CP2 full-history baseline. |
 | 2026-10-10 | CP1 | Implemented engine/CLI fixes and limited Harlowe support; 18 offline tests, 11 browser cases, and 6,822 audit checks pass. Added persistent reference fixtures and CP1_VALIDATION.md. | CP2 Responses/full-history integration; exhaustive playthrough coverage remains outside CP1 validation. |
 | 2026-10-10 | CP2 | Replaced classic chain/entity memory with Responses, strict structured decisions, explicit settings, bounded errors/retries, full-history context budgeting, and bounded CLI runs. 32 tests and pip check pass; four live Luna requests succeeded. Removed unused dependencies and refreshed the lock. | CP3 persistence and complete usage accounting; Sol access and roleplay comparisons remain untested. |
+| 2026-10-10 | CP3 | Added SQLite checkpoints and append-only events; story/persona/settings/transcript/RNG save and resume; atomic actions, revision protection, per-attempt usage/latency/error logs, persistent request/token budgets, and explicit interruption recovery. 48 offline tests and pip check pass. Added CP3_VALIDATION.md and CLI documentation. No paid calls. Git checkpoint: `Complete CP3 persistence and observability milestone`. | CP4 hybrid memory, batched extraction, source-linked retrieval, and inspection. |
 
 ## How to update this reference
 
