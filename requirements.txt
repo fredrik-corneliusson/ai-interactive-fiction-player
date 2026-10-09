@@ -1,7 +1,8 @@
-BeautifulSoup4
-lxml
-click
-
-langchain
-openai
-python-dotenv
+beautifulsoup4>=4.13,<5
+lxml>=6,<7
+click>=8.1,<9
+requests>=2.32,<3
+langchain-classic>=1,<2
+langchain-core>=1,<2
+langchain-openai>=1,<2
+python-dotenv>=1,<2

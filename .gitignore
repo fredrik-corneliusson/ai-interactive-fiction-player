@@ -122,6 +122,10 @@ celerybeat.pid
 # Environments
 .env
 .venv
+data/twine_game.html
+data/del1.html
+data/del2.html
+data/twine_game.previous.html
 env/
 venv/
 ENV/

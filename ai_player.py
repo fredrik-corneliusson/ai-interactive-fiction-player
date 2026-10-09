@@ -4,12 +4,14 @@ from pprint import pprint
 import click
 from dotenv import load_dotenv
 import os
+import pathlib
+import re
 from game import Game, GameEngine, load_game_data
 
-from langchain.chat_models import ChatOpenAI
-from langchain.chains import ConversationChain
-from langchain.memory import ConversationEntityMemory
-from langchain.memory.prompt import PromptTemplate
+from langchain_openai import ChatOpenAI
+from langchain_classic.chains import ConversationChain
+from langchain_classic.memory import ConversationEntityMemory
+from langchain_core.prompts import PromptTemplate
 
 INSTRUKTION = """Du är en AI baserad på en "large language model" tränad av OpenAI som spelar ett textbaserat äventyrsspel. 
 Spelet kommer att fungera likt en chat, där du presenteras med kontext och speltexter och sedan svarar med ett av valen som finns i sektionen "Nuvarande speltext". 
@@ -79,7 +81,7 @@ def out(*msgs):
     print('\n'.join(wrapped_lines))
 
 
-def main(debug=False):
+def main(debug=False, story_file=None, seed=None):
     load_dotenv()
 
     # test our api key
@@ -103,32 +105,42 @@ def main(debug=False):
         verbose=debug
     )
 
-    spel = Game(load_game_data())
-    ge = GameEngine(spel)
-    # hoppa över titelskärm
-    ge.next(1)
+    ge = GameEngine(Game(load_game_data(game_file=story_file), seed=seed))
+    play(ge, conversation)
 
-    out("Morsning Korsning barnförlossning! Nu kör vi!")
-    christers_val = None
+
+def parse_choice(response, engine):
+    match = re.match(r"^\s*(\d+)\s*(?:[.\)]|$)", response)
+    if not match:
+        raise ValueError("AI response must start with a numbered choice")
+    choice = int(match.group(1))
+    engine.validate_choice(choice)
+    return choice
+
+
+def play(ge, conversation):
+    """The engine alone advances the game; invalid responses never apply actions."""
+    out(ge.next())
     runs = 0
-    while True:
+    while ge.running:
         if runs > 0:
             print(f"Autorun {runs}")
             user_input = ''
             runs -= 1
         else:
-            out('-'*max_columns)
-            user_input = input("> ")
-            out('-'*max_columns)
+            try:
+                user_input = input("> ").strip()
+            except EOFError:
+                break
         if user_input == 'q':
             break
         elif user_input.startswith('r '):
             try:
                 runs = int(user_input.split()[-1])
-            except ValueError as e:
-                print(e)
-                continue
-            user_input = ''
+                if runs < 1:
+                    raise ValueError("Autorun steps must be positive")
+            except ValueError as error:
+                out(str(error))
             continue
         elif user_input == 'm':
             pprint(conversation.memory.entity_store.store)
@@ -136,26 +148,35 @@ def main(debug=False):
         elif user_input == 'v':
             print(ge.game._current)
             pprint(ge.game.vars)
+            pprint(ge.game.notices)
             continue
         elif user_input != '':
-            out("SYNTAX ERROR!, choose one of:\n v - show variables\n m - show entity memory\n r # - auto run # steps.\nq - quit\nor just press enter to continue game.")
+            out("Choose v, m, r #, q, or press Enter to continue.")
             continue
-        text = str(ge.next(christers_val))
-        out(text)
-        out("\nTänker...")
+        text = ge.next()
+        out("Tänker...")
         ai_response = conversation.predict(input=text)
-
-        out('='*max_columns)
-        out("\nChrillePs val:\n", ai_response)
-        out('='*max_columns)
-        christers_val = int(ai_response.split(".")[0])
+        out("ChrillePs val:", ai_response)
+        try:
+            choice = parse_choice(ai_response, ge)
+            result = ge.next(choice)
+        except ValueError as error:
+            out(f"Action rejected: {error}")
+            runs = 0
+            continue
+        out(result)
 
 @click.command()
 @click.option('--debug/--no-debug', default=False, help='debug output')
-def cli(debug):
+@click.option('--story-file', type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path), help='Local Twine HTML file.')
+@click.option('--seed', type=int, help='Seed for repeatable random outcomes.')
+def cli(debug, story_file, seed):
     if debug:
         out("debug on")
-    main(debug=debug)
+    try:
+        main(debug=debug, story_file=story_file, seed=seed)
+    except (ValueError, OSError) as error:
+        raise click.ClickException(str(error)) from error
 
 if __name__ == '__main__':
     cli()

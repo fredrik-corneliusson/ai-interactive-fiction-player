@@ -1,0 +1,244 @@
+[
+  {
+    "part": "del1",
+    "seed": 7,
+    "selection_policy": "first visible action",
+    "turns": [
+      {
+        "turn": 0,
+        "passage": "Prolog",
+        "observation": "Christer Pettersson resa i fördärvet Vem kan släcka Palme?\n[1. BÖRJA SPELA]",
+        "available_choices": [
+          "BÖRJA SPELA"
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 1,
+        "passage": "Tidigt i februari 1986.",
+        "observation": "Tidigt i februari 1986. Du, Christer Pettersson, vaknar upp på en våt och sliten parkbänk klockan sju på morgonen. Jobbtrötta medelmåttor skyndar till sina jobb, och du upplever ännu en gång munnens bekanta torrhet. ”Va' fan hände igår. Träffade jag Lasse och Gerd? Hur fan hamna ja' på Söder?”. Du ställer dig upp och förvånas över hur exakt din balans är. Nykterhetens enda fördel, en något stadigare fot.\n\nDitt liv har sedan barnsben handlat om att överleva, att stjäla, att roa dig. Som liten kis på Östervägen i Solna hade du dina fingrar i andras kakburkar. Du såg inget fel i det. Som ungdom ersattes kakorna mot amfetamin. Du gillar att leva livet, vare sig det är i det fria eller på anstalt. Den snart 40-åriga man du nu är vet när du kan festa, när du bör ligga lågt och speciellt hur du uthärdar de stunder då fickorna gapar tomma och kroppen gapar efter rus.\n\nDu har lovat dig själv en vit månad från uppåttjacket, och har ersatt det med ohyggliga mängder sprit. Igår måste varit en kväll när livet lekte. Du verkar ha supit bort din plånbok. Men nu står du mitt på Mariatorget, pank som vanligt och med världen vid dina fötter. ”Va fan kan ja’ få mig ett järn?”\n[1. Du hasar dig fram på Hornsgatan.]",
+        "available_choices": [
+          "Du hasar dig fram på Hornsgatan."
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 2,
+        "passage": "Hornsgatan",
+        "observation": "På Hornsgatan har du ägnat många blöta kvällar, men det var ett par år sedan du drällde i dessa trakter. Som av en slump så står du utanför ett bekant hus. Rikemansdottern Jenny Magnusdotter bodde här tidigare. Det var alltid fest hos henne, och drickat var gratis.\n\nJenny var alltid schysst mot dig, trots klasskillnaden. Hon var schysst mot de flesta, nu när du tänker på det. Hon var enkel att ha att göra med och du ångrar att ni har tappat kontakten. Om du kommer ihåg historien rätt så var det fest hos henne en gång och några beväpnade snubbar dök upp och ett skott gick av. Det blev ett rejält snutpådrag. Du undrar om hon bor kvar.\n[1. Gå fram till Jennys port.]",
+        "available_choices": [
+          "Gå fram till Jennys port."
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 3,
+        "passage": "Hor-Jenny",
+        "observation": "Du går fram till Jennys port, och visst står namnet Magnusdotter kvar. Men bredvid namnet står det även Love Films AB. Du undrar om farsan fått nog och tagit tillbaka lägenheten. Hon kanske bor kvar på nåder? Det är oavsett värt ett försök. Du ringer på klockan och snabbt sprakar det till i högtalaren. Du hör en hetsig mansröst. ”Tre trappor upp!”. Dörren öppnas och du rycker upp dörren.\n\nKan du verkligen få släcka din törst här?\n[1. Du går in genom porten och upp för trapporna.]",
+        "available_choices": [
+          "Du går in genom porten och upp för trapporna."
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 4,
+        "passage": "Porrfilm?",
+        "observation": "Dörren skyltar med både efternamnet och bolagsnamnet. Du knackar på dörren och genast öppnar en storvuxen man iklädd shorts och åtsittande t-tröja. Han tittar på dig misstänksamt och utbrister sedan i ett garv som ekar genom trapphuset. ”De måste skrapat längst ner i tunnan för att rotat fram dig. Jaja, kom in, kom in. Det är ju knappast dig de vill se.”\n\nDu tar ett steg in i lägenheten. Det luktar nystädat, nästan som på ett sjukhus. Ett starkt lysande sken kommer från det du minns var vardagsrummet. Du hör några röster därifrån. Filminspelning? Du frågar bjässen: ”Jag letar egentligen efter Jenny Magnusdotter. Hon är en gammal polare till mig. Jag hade vägarna förbi.” Bjässen inser att du inte är den person han väntat på och spänner ögonen i dig. Han meddelar bestämt att Jenny inte bor kvar här längre och föser ut dig genom dörren. Dörren går igen med ett dån. Samtidigt ser du att att en äldre tant är på väg uppför trapporna med en lite byracka i koppel.\n[1. Fråga tanten lite försiktigt om Jenny.]\n[2. Fråga tanten om hon kan bjuda på ett järn.]",
+        "available_choices": [
+          "Fråga tanten lite försiktigt om Jenny.",
+          "Fråga tanten om hon kan bjuda på ett järn."
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 5,
+        "passage": "Jenny?",
+        "observation": "Du harklar dig, bockar och säger till tanten: ”Ursäkta mig damen, men vet damen var Jenny Magnusdotter har tagit vägen? Personen bakom dörren säger att hon har flyttat.” Tanten skiner upp och säger med vänlig röst. ”Åh, lilla Jenny. Hon försvann från en dag till den andra. Tyärr har jag inte sett henne. Jo, Jenny var alltid så...”.\n\nTanten babblar på, du lyssnar med halvt öra och börja känna hur alkoholsuget växer. Inget napp hos Jenny alltså. ”Men du ser så trött och sliten ut. Ta den här och köp dig en kopp kaffe!” Tanten ger dig en 10-lapp. Ibland löser det sig bara.\n[1. Mot bolaget.]",
+        "available_choices": [
+          "Mot bolaget."
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 6,
+        "passage": "Systemet1",
+        "observation": "Du hänger på låset och är så klart den första kunden in på bolaget. Det tar inte många sekunder innan första burken är tom. Som det ska vara. Du sätter dig på en stenmur nära bolaget och huttrar. Det är först nu du inser att du inte har på dig din dunjacka. Var i helvete var jag igår, tänker du medan du öppnar den andra burken. ”Jag borde åka hem till Rotebro. Se om lägenheten är kvar.”\n\nMedan du funderar över gårdagen så kommer du på att din gamla polare Nicke Backe bor inte långt här ifrån, men du har svårt att släppa vad som kan ha hänt Jenny. Den jävla bjässen verkade extremt osympatisk och pissig.\n[1. Spana in Jennys lägenhet igen.]\n[2. Hälsa på hos Nicke.]",
+        "available_choices": [
+          "Spana in Jennys lägenhet igen.",
+          "Hälsa på hos Nicke."
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 7,
+        "passage": "SpanaJenny",
+        "observation": "Du promenerar tillbaka till Hornsgatan och sätter dig på en bänk och spanar upp mot Jennys fönster. Förmodligen är filminspelningen igång för fullt. Du undrar om bjässen i den trånga tröjan är livvakt, gangster eller aktör.\n\nMedan du funderar på vad du ska göra härnäst så faller du sakta i sömn på bänken. En halvtimme senare väcks du av att två välvuxna män krokat i sina armar i dina. Bjässen från lägenheten säger: ”Blev inte du tillsagd att Jenny inte bor kvar. Varför sitter du här och spanar? Är du en jävla snut eller?” Den andra mannen fnissar till: ”Snut? I så fall är det världens bästa utklädnad. Det är bara en råtta som gillar att blöta ner nosen.”\n\nDu försöker rycka dig loss men sitter fast. ”Lägg av va? Jag vill fan inget. Får man inte sitta på en bänk i den här stan eller?” Bjässen rycker tag i ditt ena öra och vrider om, och den andra ska precis agera när en polisbil sakta åker förbi. De släpper taget och reser sig och försöker se oskyldiga ut. Inte varje dag du räddas av snuten. Du ser din chans att skaka av dig männen.\n[1. Ropa på polisbilen.]\n[2. Hoppa över bänken och fly scenen.]",
+        "available_choices": [
+          "Ropa på polisbilen.",
+          "Hoppa över bänken och fly scenen."
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 8,
+        "passage": "Polisbilen",
+        "observation": "Du vinkar på polisen, och bilen stannar. Männen börjat röra sig sakta bort och är snart utom synhåll. Ut ur bilen stiger Lars Rickardsson, Stockholms i särklass otrevligaste patrullerande gris.\n\n”Nämen, ere inte Herr Pettersson som sitter och njuter i morgonsolen? Vad i helvete har du på hjärtat då?” Du ryser och får avsmak. Jag skulle bara stuckit när jag hade chansen, tänker du. Du drar en vals om att nåra skumma typer utanför bolaget hotade dina polare, och det vore bra om herr konstapeln kunde undersöka det hela. Minsta felsägning, felsteg eller feltitt kan få Rickardsson att gå igång.\n\n”Skitsnack. Jag såg att du satt här med nåra pajsare. Vad fan händer?” Nu gäller det att hålla tungan rätt i mun.\n[1. ”Kom igen Rickardsson, det var precis som jag sa.”]\n[2. ”Okej. De blev bara lite närgångna när jag frågade vart min polare tagit vägen.”]\n[3. ”Sköt ditt så sköter jag mitt. Jag e fan ingen golare.”]",
+        "available_choices": [
+          "”Kom igen Rickardsson, det var precis som jag sa.”",
+          "”Okej. De blev bara lite närgångna när jag frågade vart min polare tagit vägen.”",
+          "”Sköt ditt så sköter jag mitt. Jag e fan ingen golare.”"
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 9,
+        "passage": "iFred-Golare",
+        "observation": "Rickardsson köper inte ditt snack. Han närmare sig dig med bestämda steg och säger: ”Att man aldrig kan få ett sant ord från fyllerister som dig. Du vet vad ligan kan göra med en sån som dig. Ett fint ansiktslyft.”\n\nDu känner mycket väl till gamla baseballigan och deras våldsamma framfart. Även om gatuvåldsgruppen har upplösts så lever ligan vidare i annan skepnad, och du vill inte vara deras nästa offer. Men samtidigt så kan det mycket väl vara tomma ord från snutsvinet. Du tänker så snabbt din grötiga hjärnan kan.\n[1. Det här är ju en bagatell. Lika bra att vara medgörlig.]\n[2. Kanske bäst att försöka smita, om dina ben orkar springa.]",
+        "available_choices": [
+          "Det här är ju en bagatell. Lika bra att vara medgörlig.",
+          "Kanske bäst att försöka smita, om dina ben orkar springa."
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 10,
+        "passage": "t-banan",
+        "observation": "”Ok. Ok. Låt mig förklara. Det var bara så att jag var orolig för min gamla polare Jenny Magnusdotter. Jag ringde på dörren och där bakom var en stor bjässe som inte gillade att jag kom snokande. Det var han du såg här nyss.”. Du hoppas att din ärlighet kan rädda dig, och Rickardsson verkar fatta att du inte är värd besväret. Han säger att du ska ge fan i att rota i sånt som du inte känner till.\n\nDu lämnar platsen, men undrar om snuten vet något mer om vad som hänt Jenny. Du börjar få nog av Söder för idag, och du känner dig trött. Det är nog inte värt att hälsa på Nicke idag.\n[1. Mot Rotebro.]\n[2. Knacka på hos Nicke.]",
+        "available_choices": [
+          "Mot Rotebro.",
+          "Knacka på hos Nicke."
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 11,
+        "passage": "Pendeln",
+        "observation": "En stund senare, och du befinner dig på centralen. Du plankar dig in på pendeln mot Rotebro. Hem till lugnet. Men också hem till en oviss framtid.\n[1. Södermalm försvinner bakom dig.]",
+        "available_choices": [
+          "Södermalm försvinner bakom dig."
+        ],
+        "selected_choice": null
+      }
+    ]
+  },
+  {
+    "part": "del2",
+    "seed": 7,
+    "selection_policy": "first visible action",
+    "turns": [
+      {
+        "turn": 0,
+        "passage": "STARTA SPELET",
+        "observation": "Christer Petterssons resa i fördärvet Ur askan i elden\n[1. BÖRJA SPELA]",
+        "available_choices": [
+          "BÖRJA SPELA"
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 1,
+        "passage": "På en pizzeria i Sollentuna.",
+        "observation": "En skara trashankar har samlats på Pizzeria Verona för att ta farväl av Örjan. Han hittades död i sin etta för några dagar sedan, och bänknötarnas moral är i botten. Det är andra mordet på kort tid. Ingen har sett eller hört något, men ryktena florerar så klart.\n\nJerry reser sig sakta upp och höjer sitt glas. De övriga väntar på det obligatoriska talet. ”Vår goda vän Örjan har lämnat oss. Han var omtyckt av alla, hjälpte alltid till och…” Han tappar tråden när en klump i halsen växer sig stor. Den begravs snabbt och han fortsätter. ”Örjan var en hyvens man. Och den jäveln som dräpte honom ska låsas in. Det är synd och skam att inget görs. Hade det drabbat en välbärgad kostymgubbe på Strandvägen, då fan blir det utredning och det ena med det tredje.” Minnestalet spårar ut i en lång harang om rättsväsendet, och efter en kort paus avslutas talet. ”En skål för vår vän!” Männen runt borden höjer sina glas och dricker.\n\nDu sitter längst med långsidan, på en vadderad bänk. Det känns för jävligt att någon därute hoppar på samhällets svaga. Du tömmer ditt glas och reser dig upp.\n[1. Glasen ekar i lokalen.]",
+        "available_choices": [
+          "Glasen ekar i lokalen."
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 2,
+        "passage": "glasen",
+        "observation": "Du nickar slött mot dina bordskamrater och lämnar pizzerian och går ut i sensommarens kyliga kvällsbris. Örjan var en bra polare, men du orkar inte höra ett till tal.\n\nFrågar du herr och fru Svensson så lever du ett hårt liv. Men det är det enda livet du känner till. En dag går, och dagarna förvandlades sedan till år under några korta ögonblick. Dessa ögonblick har ägnats på kåken, bänken, hos polare. Stålar saknas som vanligt och dina skulder är många och ditt rykte är inte det bästa bland de lokala lånehajarna.\n\n1985 började bra, med brud och stadig inkomst. Nu är allt skit. Du ser dig omkring och tar ett djupt andetag.\n\n \n\nHälsa: 100 | Pengar: 150\n[1. Hem och slagga framför dumburken?]\n[2. Kila förbi polaren Lasse?]",
+        "available_choices": [
+          "Hem och slagga framför dumburken?",
+          "Kila förbi polaren Lasse?"
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 3,
+        "passage": "fotboll",
+        "observation": "Varje gång du tar dig hem från pizzerian så genar du över en grusfotbollsplan. Den är omgiven av hyreshus och ett inte allt för stort skogsområde. Husen har bra utsikt över planen, så det är första parkett under korpmatcherna och när barnen från lågstadieskolan intill lirar boll.\n\nDu går längs med kortsidan och drar dig sedan in mot plan med sikte mot motsatt sida. Kvällen har varit tung och du hasar dig långsamt fram. Men du hinner knappt lämna straffområdet när du hör ett skrik. Någon eller några gapar, men du kan inte urskilja vad som sägs. Vid avbytarbänkarna ser du en gänglig person som rycker och sliter i en betydligt kortare man som sitter på en av bänkarna.\n\n”Hjälp! Sluta! Lägg av!” hör du när du närmar dig mittcirkeln.\n\n  \n\nHälsa: 100 | Pengar: 150\n[1. Fortsätt hem och låt naturen ha sin gång.]\n[2. Spring fram och knuffa undan den långa mannen.]\n[3. ”Va fan sysslar ni med!”]",
+        "available_choices": [
+          "Fortsätt hem och låt naturen ha sin gång.",
+          "Spring fram och knuffa undan den långa mannen.",
+          "”Va fan sysslar ni med!”"
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 4,
+        "passage": "slagga",
+        "observation": "Du lämnar fotbollsplanen bakom dig och efter några minuter så når du fram till ditt hyreshus. Den nya lägenheten ligger närmare torget och är förvånansvärt lik den förra. Lika många kvadratmeter och samma möbler. En färg-TV och en videobandspelare är det enda som ännu inte hittat sig till stampen.\n\nSchlagerlåtarna tävlar om vilka som väsnas mest, men du orkar inte byta kanal. Istället förs dina tankar mot din ekonomiska situation. Priset på tjack är tillräckligt högt för att skapa stora hål i fickorna. Den enda vägen har varit att börja låna. Det är lätt att låna stålar när alla tror att du är god för det. Det är svårare att betala tillbaka när du i själva verket är luspank. Och nu börjar det bli svårt att undvika masarna. Alla vill ha tillbaka sina stålar. “Skitsamma!” säger du och sluter ögonen.\n\n\n\nHälsa: 100 | Pengar: 150\n[1. En ny bedrövlig dag väntar.]",
+        "available_choices": [
+          "En ny bedrövlig dag väntar."
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 5,
+        "passage": "nyadagen",
+        "observation": "Kroppen är stel, och magen är lika tom som hjärnan. Men en ny dag och nya möjligheter väntar. Det är dags att fånga dagen. Eller åtminstone inte låta dagen fånga dig. Du stänger kylen lika snabbt som du öppnade den. Den är också tom.\n\nDu blickar bort mot Jesus-bilden som hänger i hallen, nickar till och slår sedan igen dörren efter dig. ”Det kräver att vi inte fokuserar på jordiska saker, utan riktar blicken mot det himmelska.”\n\n\n\nHälsa: 100 | Pengar: 150\n[1. Bänken väntar.]",
+        "available_choices": [
+          "Bänken väntar."
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 6,
+        "passage": "nyadagen-1",
+        "observation": "Torget hägrar, så även Systembolagets vackra skylt. Hungern kan vänta när törsten ska släckas. Efter ett snabbt besök på bolaget slår du dig ner bland de andra. Där sitter Björn, Krukan, Britt och Jerry. Bänken teoretiserar om morden.\n\n”Det är säkert skitungar som åker in från stan och ska spela tuffa.” säger Britt. ”Inte en chans. Det är snuten och säpo och dom andra. Dom vill bli av med oss, så enkelt är det. Ska göra förorten fin och säker. Städning helt enkelt.” säger Krukan. Björn trampar en fimp och lutar sig mot dig. ”Du, det var en journalist här för nån timme sedan. Letade efter dig. Smal typ, såg helt vilsen ut. Han sa att han skulle komma tillbaka lite senare. Vad ville han?” ”Fan vet.” svarar du kort.\n\n\n\nHälsa: 100 | Pengar: 100\n[1. Solen fortsätter att skina.]",
+        "available_choices": [
+          "Solen fortsätter att skina."
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 7,
+        "passage": "nyadagen-2",
+        "observation": "Dagen fortsätter på bänken. Ni pratar på, skrattar ibland, hejar på förbipasserande. Några damer i övre medelåldern får sig en busvissling.\n\nDu börjar tänka på Örjan och hur bedrövligt hans öde var. Han var en schysst kille och var inneboende hos dig i början av året, innan han fick sig en etta med kokvrå. Visst var han lite tjatig ibland, med allt hästsnack hit och dit. Men han hade inga fiender. Det är synd och jävla skam, det som hände, tänker du.\n\nMen samtalen fortsätter och solen värmer upp bänken, och som omväxling så mår du ganska bra. Du har bra polare och det är oftast god stämning. Även om det ibland är svårt så önskar du dig lite lugn och ro i livet.\n\n\n\nHälsa: 100 | Pengar: 100\n[1. Måtte alla dagar vara som denna.]",
+        "available_choices": [
+          "Måtte alla dagar vara som denna."
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 8,
+        "passage": "Kapitel 1",
+        "observation": "Kaptiel 1 - En obehaglig känsla\n\nJonas Ågren sitter vid sin skrivmaskin på tionde våningen i DN-skrapan och blickar ut över Kungsholmens lugna förmiddag. Kaffet har svalnat i muggen och röken från askkoppen har dött ut. Den grävande gruppen, som består av elva journalister, bildades för snart två år sedan och medarbetarna handplockades av redaktör Mikael Liljeström. Jonas var både förvånad och glad när han blev utvald, och både han själv och många i byggnaden undrade varför en så ung reporter fick ingå i en så pass viktig grupp. Han vet fortfarande inte varför, men han vet att han dragit sitt strå till stacken tack vare höstens stora avslöjande. Han reser sig upp och tittar sig omkring i det tomma rummet. Inte ens Mikael är på plats.\n\nDen senaste månaden har varit tung. Han har blivit tilldelad ett rutinjobb rörande vattenföroreningar nära en förskola. Det går långsamt framåt. Hans försök att gräva i morden på de utslagna på egen hand har inte mottagits positivt av redaktören. Det är bestämt uttalat att Krim-gruppen sköter allt sånt. Men Jonas magkänsla säger att han har något på gång. Det är för mycket hysch-hysch bland polisen, för lite uppmärksamhet bland media.\n[1. Redaktör Liljeström kliver in i rummet.]",
+        "available_choices": [
+          "Redaktör Liljeström kliver in i rummet."
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 9,
+        "passage": "redaktor",
+        "observation": "”Ska inte du vara ute och gräva avlopp?” säger Mikael med ett hånfullt leende. Jonas beklagar sig över hur hans undersökning sitter fast. Visselblåsarens tips är svårt att bekräfta. Han vill hellre åka ut till Sollentuna och gräva fram information om något helt annat, men han vet bättre än att fortsätta prata öppet om sin privata spaning. Men Jonas ansikte avslöjar vad han tänker.\n\n”Du, släpp det där med uteliggarna. Det finns ingen story där. Och oavsett om det skulle vara nått så har vi redan bra gubbar på det. Okej?” Jonas nickar och försäkrar Mikael Liljeström att det är släppt. Han tänder en cigg och tar sin ryggsäck och lämnar kontoret. Han går mot tunnelbanan, med Sollentuna i sikte.\n[1. Vardagen fortsätter.]",
+        "available_choices": [
+          "Vardagen fortsätter."
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 10,
+        "passage": "norrvik",
+        "observation": "Det var länge sedan du vaknade upp i någon annans säng. Gårdagens partaj hemma hos Jerry var en total förödelse, där spriten flödade fritt. Du raggade på en dam och fick napp. Namnet på kvinnan som ligger och snarkar i sängen har du glömt, men när du stigit upp och strosat runt lite i lägenheten så läser du Gunilla Johansson på ett inkassobrev på köksbordet. Du klär tyst på dig, tar dig en banan och påminns om snacket med Jerry igår. Han hade nått jobb på gång, men fan vet om du kommer ihåg vad det var. Men det var något stort.\n\nDu kastar bananskalet i vasken, sträcker på dig och kan inte låta bli att snegla på handväskan som ligger öppen och inbjudande på köksstolen.\n\n \n\nHälsa: 100 | Pengar: 100\n[1. Rota i väskan.]\n[2. Lämna lägenheten.]",
+        "available_choices": [
+          "Rota i väskan.",
+          "Lämna lägenheten."
+        ],
+        "selected_choice": 1
+      },
+      {
+        "turn": 11,
+        "passage": "rota",
+        "observation": "Med så bra precision du kan förmå lyfter du plånboken ur väskan och öppnar den. Körkortet bekräftar hennes namn. Sedelfacket innehåller två hundringar. Du känner dig givmild när du endast norpar en av hundringarna och lägger sedan tillbaka plånboken på samma plats som du hittade den. Snarkningarna fortsätter att eka från sovrummet. \n\nDu kliver ut i morgonljuset och försöker få bäring. Lägenheten befinner sig på bottenplan och området känns bekant, men du vet inte exakt var du är. Efter att du tagit ett par steg ut mot gården så känner du igen dig. Norrviken. Det är samma hus som den gamla finnjäveln Juha bor. Du var på besök hos honom för nått år sedan. Han brukar alltid vara svårt att ha att göra med.\n\n \n\nHälsa: 100 | Pengar: 200\n[1. Åk till Jerry om ett potentiellt jobb.]\n[2. Se om Juha är hemma.]",
+        "available_choices": [
+          "Åk till Jerry om ett potentiellt jobb.",
+          "Se om Juha är hemma."
+        ],
+        "selected_choice": null
+      }
+    ]
+  }
+]

@@ -1,0 +1,243 @@
+[
+  {
+    "part": "del1",
+    "passage": "mannen",
+    "text": "Du tittar dig konstant omkring efter snuten, och du upptäcker spåret av blod som ni lämnar efter er. Det här bådar inte gott. Efter ett par minuter når ni fram till huset och uppgången som leder till mannens lägenhet på bottenplan. När ni har stängt dörren bakom er ramlar mannen ihop på golvet. Juha böjer sig ner och skakar om mannen, som snabbt viskar nått och pekar mot vardagsrummet.\n\n(if: $juha2 is true)[En alltför upphetsad och ursinnig Juha får tag på sedelbunten som gömt sig i en tom bok i bokhyllan. Sedan vänder han sig om och riktar pistolen mot dig. ”//Tror du jag förlåtit dig va, din skit.//”. Du hinner inte säga något innan avtryckaren avlossar skottet som tar ditt liv. Din resa i fördärvet tar slut på golvet i en lägenhet i Rotebro.\n\n(text-colour: #1C58C1)[Slutpoäng:  (3/10)]\n(link: \"Ladda\")[(load-game: \"file A\")]\n(link: \"Börja om från början\")[(reload:)]](else:)[En upphetsad och pengakåt Juha fingrar på sedelbunten som gömt sig i en tom bok i bokhyllan. Juha säger till mannen att om han golar så sitter nästa kula mellan ögonen. Sedan vänder han sig mot dig, skrynklar ihop en tusing och kastar den mot dig. Finnen kliver över mannen på golvet, går förbi dig och försvinner från platsen. Du plockar upp sedeln och går därifrån.\n\n[[Ta dig hem.|hemma4]]]",
+    "variables": {
+      "juha2": true
+    },
+    "expected_text": "Du tittar dig konstant omkring efter snuten, och du upptäcker spåret av blod som ni lämnar efter er. Det här bådar inte gott. Efter ett par minuter når ni fram till huset och uppgången som leder till mannens lägenhet på bottenplan. När ni har stängt dörren bakom er ramlar mannen ihop på golvet. Juha böjer sig ner och skakar om mannen, som snabbt viskar nått och pekar mot vardagsrummet. En alltför upphetsad och ursinnig Juha får tag på sedelbunten som gömt sig i en tom bok i bokhyllan. Sedan vänder han sig om och riktar pistolen mot dig. ”Tror du jag förlåtit dig va, din skit.”. Du hinner inte säga något innan avtryckaren avlossar skottet som tar ditt liv. Din resa i fördärvet tar slut på golvet i en lägenhet i Rotebro. Slutpoäng: (3/10)",
+    "expected_links": [],
+    "expected_variables": {
+      "juha2": true
+    }
+  },
+  {
+    "part": "del1",
+    "passage": "mannen",
+    "text": "Du tittar dig konstant omkring efter snuten, och du upptäcker spåret av blod som ni lämnar efter er. Det här bådar inte gott. Efter ett par minuter når ni fram till huset och uppgången som leder till mannens lägenhet på bottenplan. När ni har stängt dörren bakom er ramlar mannen ihop på golvet. Juha böjer sig ner och skakar om mannen, som snabbt viskar nått och pekar mot vardagsrummet.\n\n(if: $juha2 is true)[En alltför upphetsad och ursinnig Juha får tag på sedelbunten som gömt sig i en tom bok i bokhyllan. Sedan vänder han sig om och riktar pistolen mot dig. ”//Tror du jag förlåtit dig va, din skit.//”. Du hinner inte säga något innan avtryckaren avlossar skottet som tar ditt liv. Din resa i fördärvet tar slut på golvet i en lägenhet i Rotebro.\n\n(text-colour: #1C58C1)[Slutpoäng:  (3/10)]\n(link: \"Ladda\")[(load-game: \"file A\")]\n(link: \"Börja om från början\")[(reload:)]](else:)[En upphetsad och pengakåt Juha fingrar på sedelbunten som gömt sig i en tom bok i bokhyllan. Juha säger till mannen att om han golar så sitter nästa kula mellan ögonen. Sedan vänder han sig mot dig, skrynklar ihop en tusing och kastar den mot dig. Finnen kliver över mannen på golvet, går förbi dig och försvinner från platsen. Du plockar upp sedeln och går därifrån.\n\n[[Ta dig hem.|hemma4]]]",
+    "variables": {
+      "juha2": false
+    },
+    "expected_text": "Du tittar dig konstant omkring efter snuten, och du upptäcker spåret av blod som ni lämnar efter er. Det här bådar inte gott. Efter ett par minuter når ni fram till huset och uppgången som leder till mannens lägenhet på bottenplan. När ni har stängt dörren bakom er ramlar mannen ihop på golvet. Juha böjer sig ner och skakar om mannen, som snabbt viskar nått och pekar mot vardagsrummet. En upphetsad och pengakåt Juha fingrar på sedelbunten som gömt sig i en tom bok i bokhyllan. Juha säger till mannen att om han golar så sitter nästa kula mellan ögonen. Sedan vänder han sig mot dig, skrynklar ihop en tusing och kastar den mot dig. Finnen kliver över mannen på golvet, går förbi dig och försvinner från platsen. Du plockar upp sedeln och går därifrån. Ta dig hem.",
+    "expected_links": [
+      {
+        "text": "Ta dig hem.",
+        "destination": "hemma4"
+      }
+    ],
+    "expected_variables": {
+      "juha2": false
+    }
+  },
+  {
+    "part": "del1",
+    "passage": "valet1",
+    "text": "När kvällens köld biter i dina kinder så börjar du fantisera om varmare breddgrader och badstränder. Men om du måste lämna landet så behöver du stålar. I fickan har du knappt tusen kronor. Fantasin dör bort och verkligheten tar snabbt över.\n\nDu går bort mot pendeln i tunga tankar. Grubbleriet fortsätter in till stan, och du funderar febrilt efter sätt att skaffa snabba pengar. (if: $neger is true)[Det kan vara en idé att spana in mannen som hade påsar ihop med Tito. Langare brukar ha mycket pengar gömda.](else:)[Bankrån är för riskabelt. Bättre att råna en höjdare, kanske en langare. Nicke känner till alla skumma spöken i stan.] Sedan dyker en annan tanke upp. Varför inte exponera hela komplotten. Dagens Nyheter lär betala bra för storyn och bilderna på Jenny och statsministern. Allt anonymt så klart.\n\nPå centralen ställs du ännu en gång inför ett svårt beslut.\n\n(if: $neger is true)[[[Åk till Söder och leta efter langaren.|swedb]]](else:)[[[Åk till Nicke och få information.|knarkcash2]]]\n[[Kontakta DN.|dn-tjall]]",
+    "variables": {
+      "neger": true
+    },
+    "expected_text": "När kvällens köld biter i dina kinder så börjar du fantisera om varmare breddgrader och badstränder. Men om du måste lämna landet så behöver du stålar. I fickan har du knappt tusen kronor. Fantasin dör bort och verkligheten tar snabbt över. Du går bort mot pendeln i tunga tankar. Grubbleriet fortsätter in till stan, och du funderar febrilt efter sätt att skaffa snabba pengar. Det kan vara en idé att spana in mannen som hade påsar ihop med Tito. Langare brukar ha mycket pengar gömda. Sedan dyker en annan tanke upp. Varför inte exponera hela komplotten. Dagens Nyheter lär betala bra för storyn och bilderna på Jenny och statsministern. Allt anonymt så klart. På centralen ställs du ännu en gång inför ett svårt beslut. Åk till Söder och leta efter langaren. Kontakta DN.",
+    "expected_links": [
+      {
+        "text": "Åk till Söder och leta efter langaren.",
+        "destination": "swedb"
+      },
+      {
+        "text": "Kontakta DN.",
+        "destination": "dn-tjall"
+      }
+    ],
+    "expected_variables": {
+      "neger": true
+    }
+  },
+  {
+    "part": "del1",
+    "passage": "valet1",
+    "text": "När kvällens köld biter i dina kinder så börjar du fantisera om varmare breddgrader och badstränder. Men om du måste lämna landet så behöver du stålar. I fickan har du knappt tusen kronor. Fantasin dör bort och verkligheten tar snabbt över.\n\nDu går bort mot pendeln i tunga tankar. Grubbleriet fortsätter in till stan, och du funderar febrilt efter sätt att skaffa snabba pengar. (if: $neger is true)[Det kan vara en idé att spana in mannen som hade påsar ihop med Tito. Langare brukar ha mycket pengar gömda.](else:)[Bankrån är för riskabelt. Bättre att råna en höjdare, kanske en langare. Nicke känner till alla skumma spöken i stan.] Sedan dyker en annan tanke upp. Varför inte exponera hela komplotten. Dagens Nyheter lär betala bra för storyn och bilderna på Jenny och statsministern. Allt anonymt så klart.\n\nPå centralen ställs du ännu en gång inför ett svårt beslut.\n\n(if: $neger is true)[[[Åk till Söder och leta efter langaren.|swedb]]](else:)[[[Åk till Nicke och få information.|knarkcash2]]]\n[[Kontakta DN.|dn-tjall]]",
+    "variables": {
+      "neger": false
+    },
+    "expected_text": "När kvällens köld biter i dina kinder så börjar du fantisera om varmare breddgrader och badstränder. Men om du måste lämna landet så behöver du stålar. I fickan har du knappt tusen kronor. Fantasin dör bort och verkligheten tar snabbt över. Du går bort mot pendeln i tunga tankar. Grubbleriet fortsätter in till stan, och du funderar febrilt efter sätt att skaffa snabba pengar. Bankrån är för riskabelt. Bättre att råna en höjdare, kanske en langare. Nicke känner till alla skumma spöken i stan. Sedan dyker en annan tanke upp. Varför inte exponera hela komplotten. Dagens Nyheter lär betala bra för storyn och bilderna på Jenny och statsministern. Allt anonymt så klart. På centralen ställs du ännu en gång inför ett svårt beslut. Åk till Nicke och få information. Kontakta DN.",
+    "expected_links": [
+      {
+        "text": "Åk till Nicke och få information.",
+        "destination": "knarkcash2"
+      },
+      {
+        "text": "Kontakta DN.",
+        "destination": "dn-tjall"
+      }
+    ],
+    "expected_variables": {
+      "neger": false
+    }
+  },
+  {
+    "part": "del1",
+    "passage": "vadnu",
+    "text": "Du begriper sakta att ingen kommer någonsin få reda på vad som har hänt. De ansvariga, (if: $alandead is true)[förutom snutarna och Alan Love så klart,](else:)[förutom snutarna så klart,] kommer gå fria och kanske fortsätta planera att mörda Palme. Och nu står du här i kvällskylan som snutmördare, och pank.\n\nDu promenderar utan något mål och grubblar över din situation. Hur kan du skaffa snabba pengar. (if: $neger is true)[Det kan vara en idé att spana in langaren som hade påsar ihop med Tito. Langare brukar ha mycket pengar gömda.](else:)[Bankrån är för riskabelt. Bättre att råna en höjdare, kanske en langare. Nicke känner till alla skumma spöken i stan.] Sedan dyker en annan tanke upp. Varför inte exponera hela komplotten. Dagens Nyheter lär betala bra för storyn och bilderna på Jenny och statsministern. Allt anonymt så klart.\n\nDu ställs du ännu en gång inför ett svårt beslut.\n\n(if: $neger is true)[[Leta efter langaren.|swedb]](else:)[[Åk till Nicke och få information.|knarkcash2]]\n[[Kontakta DN.|dn-tjall-v2]]",
+    "variables": {
+      "neger": true
+    },
+    "expected_text": "Du begriper sakta att ingen kommer någonsin få reda på vad som har hänt. De ansvariga, förutom snutarna så klart, kommer gå fria och kanske fortsätta planera att mörda Palme. Och nu står du här i kvällskylan som snutmördare, och pank. Du promenderar utan något mål och grubblar över din situation. Hur kan du skaffa snabba pengar. Det kan vara en idé att spana in langaren som hade påsar ihop med Tito. Langare brukar ha mycket pengar gömda. Sedan dyker en annan tanke upp. Varför inte exponera hela komplotten. Dagens Nyheter lär betala bra för storyn och bilderna på Jenny och statsministern. Allt anonymt så klart. Du ställs du ännu en gång inför ett svårt beslut. Leta efter langaren.Åk till Nicke och få information. Kontakta DN.",
+    "expected_links": [
+      {
+        "text": "Leta efter langaren.",
+        "destination": "swedb"
+      },
+      {
+        "text": "Åk till Nicke och få information.",
+        "destination": "knarkcash2"
+      },
+      {
+        "text": "Kontakta DN.",
+        "destination": "dn-tjall-v2"
+      }
+    ],
+    "expected_variables": {
+      "neger": true
+    }
+  },
+  {
+    "part": "del2",
+    "passage": "grek-nicke-satsa",
+    "text": "Du ökar insatsen på maskinen till ett hundra kronor och trycker på knappen. (if: $poker is 1)[(set: $cash to $cash +3900)Fyra damer och spader fem. Hjärtat hoppar till. Du slänger femman och får spader tre. Maskinen tickar upp sina krediter. 4000 kronor. Du går fram till grekens kompis och pekar på maskinen. //”Jag tar ut.”// Utan att röra en min så nollställer han maskinen och försvinner bakom ett skynke en halvtrappa upp. Sedan kommer han ner med 4000 i kontanter. Du stoppar snabbt ner pengarna i fickan och sätter in en hundring i maskinen.\n\n[[Dela vinsten med Nicke.|grek-nicke-dela]]\n[[Låtsas som inget har hänt.|grek-nicke-ejdela]]](elseif: $poker is 2)[Spader knekt, spader nio, ruter åtta, hjärter åtta och hjärter tre. Du behåller de två åttorna och trycker igen. Tre värdelösa kort. Ingen vinst. Du funderar en stund om du ska sätta in en hundring och låtsas som inget har hänt när Nicke kommer tillbaka. Eller skylla på att maskinen åt upp pengarna.\n\n[[Sätt in en hundring.|grek-nicke-hundra]]\n[[Spela dum.|grek-nicke-dum]]](elseif: $poker is 3)[Ruter dam, ruter nio, spader nio, klöver fem och klöver tre. Du behåller de två niorna och trycker igen. Tre värdelösa kort. Ingen vinst. Du funderar en stund om du ska sätta in en hundring och låtsas som inget har hänt när Nicke kommer tillbaka. Eller skylla på att maskinen åt upp pengarna.\n\n[[Sätt in en hundring.|grek-nicke-hundra]]\n[[Spela dum.|grek-nicke-dum]]](elseif: $poker is 4)[Spader kung, spader sju, ruter sju, klöver fyra och klöver tre. Du behåller de två sjuorna och trycker igen. Tre värdelösa kort. Ingen vinst. Du funderar en stund om du ska sätta in en hundring och låtsas som inget har hänt när Nicke kommer tillbaka. Eller skylla på att maskinen åt upp pengarna.\n\n[[Sätt in en hundring.|grek-nicke-hundra]]\n[[Spela dum.|grek-nicke-dum]]]\n(text-colour: #dfe0cc)[<span style=\"font-size: 80%\">Hälsa: $health</span> | <span style=\"font-size: 80%\">Pengar: $cash</span>]",
+    "variables": {
+      "poker": 1,
+      "cash": 150,
+      "health": 100
+    },
+    "expected_text": "Du ökar insatsen på maskinen till ett hundra kronor och trycker på knappen. Fyra damer och spader fem. Hjärtat hoppar till. Du slänger femman och får spader tre. Maskinen tickar upp sina krediter. 4000 kronor. Du går fram till grekens kompis och pekar på maskinen. ”Jag tar ut.” Utan att röra en min så nollställer han maskinen och försvinner bakom ett skynke en halvtrappa upp. Sedan kommer han ner med 4000 i kontanter. Du stoppar snabbt ner pengarna i fickan och sätter in en hundring i maskinen. Dela vinsten med Nicke. Låtsas som inget har hänt. Hälsa: 100 | Pengar: 4050",
+    "expected_links": [
+      {
+        "text": "Dela vinsten med Nicke.",
+        "destination": "grek-nicke-dela"
+      },
+      {
+        "text": "Låtsas som inget har hänt.",
+        "destination": "grek-nicke-ejdela"
+      }
+    ],
+    "expected_variables": {
+      "poker": 1,
+      "cash": 4050,
+      "health": 100
+    }
+  },
+  {
+    "part": "del2",
+    "passage": "grek-nicke-satsa",
+    "text": "Du ökar insatsen på maskinen till ett hundra kronor och trycker på knappen. (if: $poker is 1)[(set: $cash to $cash +3900)Fyra damer och spader fem. Hjärtat hoppar till. Du slänger femman och får spader tre. Maskinen tickar upp sina krediter. 4000 kronor. Du går fram till grekens kompis och pekar på maskinen. //”Jag tar ut.”// Utan att röra en min så nollställer han maskinen och försvinner bakom ett skynke en halvtrappa upp. Sedan kommer han ner med 4000 i kontanter. Du stoppar snabbt ner pengarna i fickan och sätter in en hundring i maskinen.\n\n[[Dela vinsten med Nicke.|grek-nicke-dela]]\n[[Låtsas som inget har hänt.|grek-nicke-ejdela]]](elseif: $poker is 2)[Spader knekt, spader nio, ruter åtta, hjärter åtta och hjärter tre. Du behåller de två åttorna och trycker igen. Tre värdelösa kort. Ingen vinst. Du funderar en stund om du ska sätta in en hundring och låtsas som inget har hänt när Nicke kommer tillbaka. Eller skylla på att maskinen åt upp pengarna.\n\n[[Sätt in en hundring.|grek-nicke-hundra]]\n[[Spela dum.|grek-nicke-dum]]](elseif: $poker is 3)[Ruter dam, ruter nio, spader nio, klöver fem och klöver tre. Du behåller de två niorna och trycker igen. Tre värdelösa kort. Ingen vinst. Du funderar en stund om du ska sätta in en hundring och låtsas som inget har hänt när Nicke kommer tillbaka. Eller skylla på att maskinen åt upp pengarna.\n\n[[Sätt in en hundring.|grek-nicke-hundra]]\n[[Spela dum.|grek-nicke-dum]]](elseif: $poker is 4)[Spader kung, spader sju, ruter sju, klöver fyra och klöver tre. Du behåller de två sjuorna och trycker igen. Tre värdelösa kort. Ingen vinst. Du funderar en stund om du ska sätta in en hundring och låtsas som inget har hänt när Nicke kommer tillbaka. Eller skylla på att maskinen åt upp pengarna.\n\n[[Sätt in en hundring.|grek-nicke-hundra]]\n[[Spela dum.|grek-nicke-dum]]]\n(text-colour: #dfe0cc)[<span style=\"font-size: 80%\">Hälsa: $health</span> | <span style=\"font-size: 80%\">Pengar: $cash</span>]",
+    "variables": {
+      "poker": 2,
+      "cash": 150,
+      "health": 100
+    },
+    "expected_text": "Du ökar insatsen på maskinen till ett hundra kronor och trycker på knappen. Spader knekt, spader nio, ruter åtta, hjärter åtta och hjärter tre. Du behåller de två åttorna och trycker igen. Tre värdelösa kort. Ingen vinst. Du funderar en stund om du ska sätta in en hundring och låtsas som inget har hänt när Nicke kommer tillbaka. Eller skylla på att maskinen åt upp pengarna. Sätt in en hundring. Spela dum. Hälsa: 100 | Pengar: 150",
+    "expected_links": [
+      {
+        "text": "Sätt in en hundring.",
+        "destination": "grek-nicke-hundra"
+      },
+      {
+        "text": "Spela dum.",
+        "destination": "grek-nicke-dum"
+      }
+    ],
+    "expected_variables": {
+      "poker": 2,
+      "cash": 150,
+      "health": 100
+    }
+  },
+  {
+    "part": "del2",
+    "passage": "grek-nicke-satsa",
+    "text": "Du ökar insatsen på maskinen till ett hundra kronor och trycker på knappen. (if: $poker is 1)[(set: $cash to $cash +3900)Fyra damer och spader fem. Hjärtat hoppar till. Du slänger femman och får spader tre. Maskinen tickar upp sina krediter. 4000 kronor. Du går fram till grekens kompis och pekar på maskinen. //”Jag tar ut.”// Utan att röra en min så nollställer han maskinen och försvinner bakom ett skynke en halvtrappa upp. Sedan kommer han ner med 4000 i kontanter. Du stoppar snabbt ner pengarna i fickan och sätter in en hundring i maskinen.\n\n[[Dela vinsten med Nicke.|grek-nicke-dela]]\n[[Låtsas som inget har hänt.|grek-nicke-ejdela]]](elseif: $poker is 2)[Spader knekt, spader nio, ruter åtta, hjärter åtta och hjärter tre. Du behåller de två åttorna och trycker igen. Tre värdelösa kort. Ingen vinst. Du funderar en stund om du ska sätta in en hundring och låtsas som inget har hänt när Nicke kommer tillbaka. Eller skylla på att maskinen åt upp pengarna.\n\n[[Sätt in en hundring.|grek-nicke-hundra]]\n[[Spela dum.|grek-nicke-dum]]](elseif: $poker is 3)[Ruter dam, ruter nio, spader nio, klöver fem och klöver tre. Du behåller de två niorna och trycker igen. Tre värdelösa kort. Ingen vinst. Du funderar en stund om du ska sätta in en hundring och låtsas som inget har hänt när Nicke kommer tillbaka. Eller skylla på att maskinen åt upp pengarna.\n\n[[Sätt in en hundring.|grek-nicke-hundra]]\n[[Spela dum.|grek-nicke-dum]]](elseif: $poker is 4)[Spader kung, spader sju, ruter sju, klöver fyra och klöver tre. Du behåller de två sjuorna och trycker igen. Tre värdelösa kort. Ingen vinst. Du funderar en stund om du ska sätta in en hundring och låtsas som inget har hänt när Nicke kommer tillbaka. Eller skylla på att maskinen åt upp pengarna.\n\n[[Sätt in en hundring.|grek-nicke-hundra]]\n[[Spela dum.|grek-nicke-dum]]]\n(text-colour: #dfe0cc)[<span style=\"font-size: 80%\">Hälsa: $health</span> | <span style=\"font-size: 80%\">Pengar: $cash</span>]",
+    "variables": {
+      "poker": 3,
+      "cash": 150,
+      "health": 100
+    },
+    "expected_text": "Du ökar insatsen på maskinen till ett hundra kronor och trycker på knappen. Ruter dam, ruter nio, spader nio, klöver fem och klöver tre. Du behåller de två niorna och trycker igen. Tre värdelösa kort. Ingen vinst. Du funderar en stund om du ska sätta in en hundring och låtsas som inget har hänt när Nicke kommer tillbaka. Eller skylla på att maskinen åt upp pengarna. Sätt in en hundring. Spela dum. Hälsa: 100 | Pengar: 150",
+    "expected_links": [
+      {
+        "text": "Sätt in en hundring.",
+        "destination": "grek-nicke-hundra"
+      },
+      {
+        "text": "Spela dum.",
+        "destination": "grek-nicke-dum"
+      }
+    ],
+    "expected_variables": {
+      "poker": 3,
+      "cash": 150,
+      "health": 100
+    }
+  },
+  {
+    "part": "del2",
+    "passage": "grek-nicke-satsa",
+    "text": "Du ökar insatsen på maskinen till ett hundra kronor och trycker på knappen. (if: $poker is 1)[(set: $cash to $cash +3900)Fyra damer och spader fem. Hjärtat hoppar till. Du slänger femman och får spader tre. Maskinen tickar upp sina krediter. 4000 kronor. Du går fram till grekens kompis och pekar på maskinen. //”Jag tar ut.”// Utan att röra en min så nollställer han maskinen och försvinner bakom ett skynke en halvtrappa upp. Sedan kommer han ner med 4000 i kontanter. Du stoppar snabbt ner pengarna i fickan och sätter in en hundring i maskinen.\n\n[[Dela vinsten med Nicke.|grek-nicke-dela]]\n[[Låtsas som inget har hänt.|grek-nicke-ejdela]]](elseif: $poker is 2)[Spader knekt, spader nio, ruter åtta, hjärter åtta och hjärter tre. Du behåller de två åttorna och trycker igen. Tre värdelösa kort. Ingen vinst. Du funderar en stund om du ska sätta in en hundring och låtsas som inget har hänt när Nicke kommer tillbaka. Eller skylla på att maskinen åt upp pengarna.\n\n[[Sätt in en hundring.|grek-nicke-hundra]]\n[[Spela dum.|grek-nicke-dum]]](elseif: $poker is 3)[Ruter dam, ruter nio, spader nio, klöver fem och klöver tre. Du behåller de två niorna och trycker igen. Tre värdelösa kort. Ingen vinst. Du funderar en stund om du ska sätta in en hundring och låtsas som inget har hänt när Nicke kommer tillbaka. Eller skylla på att maskinen åt upp pengarna.\n\n[[Sätt in en hundring.|grek-nicke-hundra]]\n[[Spela dum.|grek-nicke-dum]]](elseif: $poker is 4)[Spader kung, spader sju, ruter sju, klöver fyra och klöver tre. Du behåller de två sjuorna och trycker igen. Tre värdelösa kort. Ingen vinst. Du funderar en stund om du ska sätta in en hundring och låtsas som inget har hänt när Nicke kommer tillbaka. Eller skylla på att maskinen åt upp pengarna.\n\n[[Sätt in en hundring.|grek-nicke-hundra]]\n[[Spela dum.|grek-nicke-dum]]]\n(text-colour: #dfe0cc)[<span style=\"font-size: 80%\">Hälsa: $health</span> | <span style=\"font-size: 80%\">Pengar: $cash</span>]",
+    "variables": {
+      "poker": 4,
+      "cash": 150,
+      "health": 100
+    },
+    "expected_text": "Du ökar insatsen på maskinen till ett hundra kronor och trycker på knappen. Spader kung, spader sju, ruter sju, klöver fyra och klöver tre. Du behåller de två sjuorna och trycker igen. Tre värdelösa kort. Ingen vinst. Du funderar en stund om du ska sätta in en hundring och låtsas som inget har hänt när Nicke kommer tillbaka. Eller skylla på att maskinen åt upp pengarna. Sätt in en hundring. Spela dum. Hälsa: 100 | Pengar: 150",
+    "expected_links": [
+      {
+        "text": "Sätt in en hundring.",
+        "destination": "grek-nicke-hundra"
+      },
+      {
+        "text": "Spela dum.",
+        "destination": "grek-nicke-dum"
+      }
+    ],
+    "expected_variables": {
+      "poker": 4,
+      "cash": 150,
+      "health": 100
+    }
+  },
+  {
+    "part": "del2",
+    "passage": "Kapitel 1",
+    "text": "(set: $health to $health +10)(if: $health > 100)[(set: $health to 100)](text-colour: #FFFD70)[Kaptiel 1 - En obehaglig känsla]\n\nJonas Ågren sitter vid sin skrivmaskin på tionde våningen i DN-skrapan och blickar ut över Kungsholmens lugna förmiddag. Kaffet har svalnat i muggen och röken från askkoppen har dött ut. Den grävande gruppen, som består av elva journalister, bildades för snart två år sedan och medarbetarna handplockades av redaktör Mikael Liljeström. Jonas var både förvånad och glad när han blev utvald, och både han själv och många i byggnaden undrade varför en så ung reporter fick ingå i en så pass viktig grupp. Han vet fortfarande inte varför, men han vet att han dragit sitt strå till stacken tack vare höstens stora avslöjande. Han reser sig upp och tittar sig omkring i det tomma rummet. Inte ens Mikael är på plats.\n\nDen senaste månaden har varit tung. Han har blivit tilldelad ett rutinjobb rörande vattenföroreningar nära en förskola. Det går långsamt framåt. Hans försök att gräva i morden på de utslagna på egen hand har inte mottagits positivt av redaktören. Det är bestämt uttalat att Krim-gruppen sköter allt sånt. Men Jonas magkänsla säger att han har något på gång. Det är för mycket hysch-hysch bland polisen, för lite uppmärksamhet bland media.\n\n[[Redaktör Liljeström kliver in i rummet.|redaktor]]\n\n(link: \"Spara\")[(save-game: \"file A\")]",
+    "variables": {
+      "health": 95
+    },
+    "expected_text": "Kaptiel 1 - En obehaglig känsla Jonas Ågren sitter vid sin skrivmaskin på tionde våningen i DN-skrapan och blickar ut över Kungsholmens lugna förmiddag. Kaffet har svalnat i muggen och röken från askkoppen har dött ut. Den grävande gruppen, som består av elva journalister, bildades för snart två år sedan och medarbetarna handplockades av redaktör Mikael Liljeström. Jonas var både förvånad och glad när han blev utvald, och både han själv och många i byggnaden undrade varför en så ung reporter fick ingå i en så pass viktig grupp. Han vet fortfarande inte varför, men han vet att han dragit sitt strå till stacken tack vare höstens stora avslöjande. Han reser sig upp och tittar sig omkring i det tomma rummet. Inte ens Mikael är på plats. Den senaste månaden har varit tung. Han har blivit tilldelad ett rutinjobb rörande vattenföroreningar nära en förskola. Det går långsamt framåt. Hans försök att gräva i morden på de utslagna på egen hand har inte mottagits positivt av redaktören. Det är bestämt uttalat att Krim-gruppen sköter allt sånt. Men Jonas magkänsla säger att han har något på gång. Det är för mycket hysch-hysch bland polisen, för lite uppmärksamhet bland media. Redaktör Liljeström kliver in i rummet.",
+    "expected_links": [
+      {
+        "text": "Redaktör Liljeström kliver in i rummet.",
+        "destination": "redaktor"
+      }
+    ],
+    "expected_variables": {
+      "health": 100
+    }
+  },
+  {
+    "part": "del2",
+    "passage": "Kapitel 1",
+    "text": "(set: $health to $health +10)(if: $health > 100)[(set: $health to 100)](text-colour: #FFFD70)[Kaptiel 1 - En obehaglig känsla]\n\nJonas Ågren sitter vid sin skrivmaskin på tionde våningen i DN-skrapan och blickar ut över Kungsholmens lugna förmiddag. Kaffet har svalnat i muggen och röken från askkoppen har dött ut. Den grävande gruppen, som består av elva journalister, bildades för snart två år sedan och medarbetarna handplockades av redaktör Mikael Liljeström. Jonas var både förvånad och glad när han blev utvald, och både han själv och många i byggnaden undrade varför en så ung reporter fick ingå i en så pass viktig grupp. Han vet fortfarande inte varför, men han vet att han dragit sitt strå till stacken tack vare höstens stora avslöjande. Han reser sig upp och tittar sig omkring i det tomma rummet. Inte ens Mikael är på plats.\n\nDen senaste månaden har varit tung. Han har blivit tilldelad ett rutinjobb rörande vattenföroreningar nära en förskola. Det går långsamt framåt. Hans försök att gräva i morden på de utslagna på egen hand har inte mottagits positivt av redaktören. Det är bestämt uttalat att Krim-gruppen sköter allt sånt. Men Jonas magkänsla säger att han har något på gång. Det är för mycket hysch-hysch bland polisen, för lite uppmärksamhet bland media.\n\n[[Redaktör Liljeström kliver in i rummet.|redaktor]]\n\n(link: \"Spara\")[(save-game: \"file A\")]",
+    "variables": {
+      "health": 70
+    },
+    "expected_text": "Kaptiel 1 - En obehaglig känsla Jonas Ågren sitter vid sin skrivmaskin på tionde våningen i DN-skrapan och blickar ut över Kungsholmens lugna förmiddag. Kaffet har svalnat i muggen och röken från askkoppen har dött ut. Den grävande gruppen, som består av elva journalister, bildades för snart två år sedan och medarbetarna handplockades av redaktör Mikael Liljeström. Jonas var både förvånad och glad när han blev utvald, och både han själv och många i byggnaden undrade varför en så ung reporter fick ingå i en så pass viktig grupp. Han vet fortfarande inte varför, men han vet att han dragit sitt strå till stacken tack vare höstens stora avslöjande. Han reser sig upp och tittar sig omkring i det tomma rummet. Inte ens Mikael är på plats. Den senaste månaden har varit tung. Han har blivit tilldelad ett rutinjobb rörande vattenföroreningar nära en förskola. Det går långsamt framåt. Hans försök att gräva i morden på de utslagna på egen hand har inte mottagits positivt av redaktören. Det är bestämt uttalat att Krim-gruppen sköter allt sånt. Men Jonas magkänsla säger att han har något på gång. Det är för mycket hysch-hysch bland polisen, för lite uppmärksamhet bland media. Redaktör Liljeström kliver in i rummet.",
+    "expected_links": [
+      {
+        "text": "Redaktör Liljeström kliver in i rummet.",
+        "destination": "redaktor"
+      }
+    ],
+    "expected_variables": {
+      "health": 80
+    }
+  }
+]
