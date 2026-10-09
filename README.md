@@ -1,7 +1,8 @@
 # AI interactive fiction player
 
 A console player for a Swedish Twine adventure. Play manually or let an AI
-choose actions in character, with entity memory managed by LangChain.
+choose actions in character, using LangChain's OpenAI Responses integration and
+locally managed full-history context.
 
 ## Setup
 
@@ -40,8 +41,53 @@ For AI play, set `OPENAI_API_KEY` in `.env`, then run:
 .\.venv\Scripts\python.exe ai_player.py
 ```
 
-AI play makes paid API requests, including additional requests for entity memory.
-Use `--debug` to show chain details. `.env` and `.venv` are ignored by Git.
+AI play makes paid API requests. The default is `gpt-6-luna` with low reasoning
+effort and one structured decision per turn; transient failures or invalid
+decisions can trigger bounded retries. There are no entity-summary calls in this
+milestone. Use `--debug` for safe model, response-status, usage, and latency
+summaries. `.env` and `.venv` are ignored by Git.
+
+For a bounded, non-interactive run:
+
+```powershell
+.\.venv\Scripts\python.exe ai_player.py --story-file data/del1.html --max-steps 3 --retries 0 --debug
+```
+
+This makes at most three generation requests with retries disabled. The title
+screen counts as a decision. Errors exit with a nonzero status without applying
+the rejected action. Interactive errors stop autorun and let you inspect state
+or quit.
+
+## AI configuration
+
+CLI options override process environment variables, which override `.env` values.
+Unset settings use the defaults below. Your existing `.env` need only contain the
+API key; see `.env.example` for optional settings.
+
+| Option | Environment variable | Default |
+| --- | --- | --- |
+| `--model` | `OPENAI_MODEL` | `gpt-6-luna` |
+| `--memory-model` | `OPENAI_MEMORY_MODEL` | `gpt-6-luna` (reserved for CP4; unused here) |
+| `--reasoning` | `OPENAI_REASONING_EFFORT` | `low` |
+| `--memory-mode` | `AI_MEMORY_MODE` | `full-history` |
+| `--timeout` | `AI_TIMEOUT` | 30 seconds per request |
+| `--retries` | `AI_RETRIES` | 2 additional attempts per decision |
+| `--max-output-tokens` | `AI_MAX_OUTPUT_TOKENS` | 2048 (includes reasoning tokens) |
+| `--context-budget` | `AI_CONTEXT_BUDGET` | 64000 conservative input token estimate |
+
+Supported model IDs are explicitly `gpt-6-luna` and `gpt-6.1-sol`; there is no
+automatic fallback. Sol requires `low` reasoning or higher. No temperature or
+other sampling override is sent. Sol's account access has not been live-tested.
+
+Full-history mode sends every encountered observation and successfully applied
+decision. It does not send hidden variables or unvisited passages. Responses use
+`store=False`, and no server-side response chain is used. History currently lasts
+only for the running process; save/resume belongs to CP3 and hybrid memory to CP4.
+
+The context budget uses a conservative UTF-8 byte estimate plus schema/envelope
+allowance, rather than an exact provider token count. If exceeded, the player
+stops before making a request and preserves all history. It never silently trims
+or summarizes the full-history baseline. Increase the budget explicitly if needed.
 
 Both modes download Part 1 from `https://fordarvet.netlify.app/del1`
 on their first run and cache it in `data/twine_game.html` (ignored by Git).
@@ -72,7 +118,7 @@ AI play:
 
 - Enter: ask the AI to choose the next action.
 - `r #`: automatically run the requested number of steps.
-- `m`: show entity memory.
+- `m`: show the complete encountered history and committed decisions.
 - `v`: show variables and the current passage.
 - `q`: quit.
 
@@ -83,18 +129,17 @@ implementation checkpoints, acceptance criteria, and progress log.
 
 - `game.py` downloads and parses Twine passages, handles a limited subset of
   Twine macros, and provides the manual game loop.
-- `ai_player.py` supplies the character prompt and connects the game to
-  `ChatOpenAI`, `ConversationChain`, and `ConversationEntityMemory`.
-- The original 2023 imports have been updated to `langchain-openai`,
-  `langchain-core`, and `langchain-classic`. The classic chain and memory APIs
-  are deprecated upstream but preserve the existing application design.
-  See the [LangChain migration guide](https://docs.langchain.com/oss/python/migrate/langchain-v1).
+- `ai_player.py` provides the AI console and configuration.
+- `player.py` supplies the Swedish persona, structured decision contract,
+  Responses model configuration, full-history context, and retry/error handling.
+- The deprecated classic chain and entity memory have been removed. Dependencies
+  use `langchain-openai`, `langchain-core`, and the OpenAI SDK. See
+  [CP2_VALIDATION.md](CP2_VALIDATION.md) for validation evidence and remaining scope.
 - The console parser supports the audited subset of Harlowe in both downloaded
   games, including nested conditionals, arithmetic, and random outcomes. Browser
   save/load/restart controls and external score pages are unavailable; `v` shows
   notices. Other unsupported syntax raises a passage-specific error.
-- The AI still uses the legacy model default and entity-memory architecture;
-  modernization of that integration is the next checkpoint.
+- Persistence and a durable event log are the next checkpoint.
 
 ## Verification
 

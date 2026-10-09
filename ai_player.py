@@ -1,182 +1,116 @@
+import json
+import os
+from pathlib import Path
 import textwrap
-from pprint import pprint
 
 import click
 from dotenv import load_dotenv
-import os
-import pathlib
-import re
+
 from game import Game, GameEngine, load_game_data
-
-from langchain_openai import ChatOpenAI
-from langchain_classic.chains import ConversationChain
-from langchain_classic.memory import ConversationEntityMemory
-from langchain_core.prompts import PromptTemplate
-
-INSTRUKTION = """Du är en AI baserad på en "large language model" tränad av OpenAI som spelar ett textbaserat äventyrsspel. 
-Spelet kommer att fungera likt en chat, där du presenteras med kontext och speltexter och sedan svarar med ett av valen som finns i sektionen "Nuvarande speltext". 
-Du ska personifiera en fiktiv Christer Pettersson, löst baserad på den sociopatiska individ med missbruksproblem som blev arresterad och senare frikänd för mordet på Olof Palme 28 feburuari 1986.
-Spelet utspelar sig i och runt Stockholm före och efter mordet.
-
-Spelet fungerar så att du ges speltexter, en speltext består av en beskrivning av situationen och sedan ett eller flera val spelaren kan använda för att gå vidare.
-Skriv siffran för ditt val och sedan en kort tanken som motiverade ditt val på ett direkt och ofiltrerat sätt inom mindre/större-än tecken:
-Exempel:
-1. <fy fan här stinker, bäst att dra>
-
-Du ska göra ditt bästa för att välja det mest passande valet för din karaktär, oavsett moralisk eller humanistisk hänsyn. Du är kapabel till precis vad som helst, så länge det gagnar dig.
-När du uttrycker tankar använd slang och referenser relevanta i missbrukarkretsar på 80-talet likt en svensk "Hank Chinaski" genomsyrat av äldre tiders brist på "woke"-censur.
-
-Kontext:
-{entities}
-
-Spelhistorik (enbart för kontext):
-{history}
-
-Nuvarande speltext:
-{input}
-Du:
-"""
-
-SPEL_TEMPLATE = PromptTemplate(
-    input_variables=['entities', 'history', 'input'],
-    output_parser=None,
-    partial_variables={},
-    template=INSTRUKTION,
-    template_format='f-string',
-    validate_template=True)
-
-_SWEDISH_ENTITY_SUMMARIZATION_TEMPLATE = """You are an AI assistant helping a human keep track of facts about relevant people, places, and concepts in their life. Update the summary of the provided entity in the "Entity" section based on the last line of your conversation with the human. If you are writing the summary for the first time, return a single sentence in swedish.
-The update should only include facts that are relayed in the last line of conversation about the provided entity, and should only contain facts about the provided entity.
-
-If there is no new information about the provided entity or the information is not worth noting (not an important or relevant fact to remember long-term), return the existing summary unchanged.
-
-Full conversation history (for context):
-{history}
-
-Entity to summarize:
-{entity}
-
-Existing summary of {entity}:
-{summary}
-
-Last line of conversation:
-Human: {input}
-Updated summary:"""
-
-ENTITY_SUMMARIZATION_PROMPT = PromptTemplate(
-    input_variables=["entity", "summary", "history", "input"],
-    template=_SWEDISH_ENTITY_SUMMARIZATION_TEMPLATE,
-)
-
-max_columns = 100
-def out(*msgs):
-    # Split the text by newline characters
-    text = ' '.join(msgs)
-    lines = text.split('\n')
-
-    # Wrap each line separately
-    wrapped_lines = [textwrap.fill(line, 100) for line in lines]
-
-    # Join the wrapped lines, using newline characters as separators
-    print('\n'.join(wrapped_lines))
+from player import Player, PlayerError, Settings
 
 
-def main(debug=False, story_file=None, seed=None):
-    load_dotenv()
-
-    # test our api key
-    if os.getenv("OPENAI_API_KEY") is None or os.getenv("OPENAI_API_KEY") == "":
-        out("OPENAI_API_KEY is not set. Please add your key to .env")
-        exit(1)
-    else:
-        out("API key set.")
-
-    llm = ChatOpenAI()
-    conversation = ConversationChain(
-        llm=llm,
-        memory=ConversationEntityMemory(
-            llm=llm,
-            #entity_extraction_prompt=ENTITY_EXTRACTION_PROMPT,
-            entity_summarization_prompt=ENTITY_SUMMARIZATION_PROMPT,
-            human_prefix="Speltext",
-            ai_prefix="Du",
-        ),
-        prompt=SPEL_TEMPLATE,
-        verbose=debug
-    )
-
-    ge = GameEngine(Game(load_game_data(game_file=story_file), seed=seed))
-    play(ge, conversation)
+def out(*messages):
+    text = " ".join(str(message) for message in messages)
+    print("\n".join(textwrap.fill(line, 100) for line in text.split("\n")))
 
 
-def parse_choice(response, engine):
-    match = re.match(r"^\s*(\d+)\s*(?:[.\)]|$)", response)
-    if not match:
-        raise ValueError("AI response must start with a numbered choice")
-    choice = int(match.group(1))
-    engine.validate_choice(choice)
-    return choice
-
-
-def play(ge, conversation):
-    """The engine alone advances the game; invalid responses never apply actions."""
-    out(ge.next())
-    runs = 0
-    while ge.running:
+def play(engine, player, *, max_steps=None, debug=False):
+    out(player.history[-1].content)
+    completed = 0
+    runs = max_steps or 0
+    while engine.running:
+        if max_steps is not None and completed >= max_steps:
+            break
         if runs > 0:
-            print(f"Autorun {runs}")
-            user_input = ''
+            user_input = ""
             runs -= 1
         else:
             try:
                 user_input = input("> ").strip()
             except EOFError:
                 break
-        if user_input == 'q':
+        if user_input == "q":
             break
-        elif user_input.startswith('r '):
+        if user_input == "m":
+            for message in player.history:
+                out(f"{message.type}: {message.content}")
+            continue
+        if user_input == "v":
+            out(engine.game._current)
+            out(json.dumps(engine.game.vars, ensure_ascii=False))
+            for notice in engine.game.notices:
+                out(notice)
+            continue
+        if user_input.startswith("r "):
             try:
                 runs = int(user_input.split()[-1])
                 if runs < 1:
                     raise ValueError("Autorun steps must be positive")
             except ValueError as error:
-                out(str(error))
+                runs = 0
+                out(error)
             continue
-        elif user_input == 'm':
-            pprint(conversation.memory.entity_store.store)
-            continue
-        elif user_input == 'v':
-            print(ge.game._current)
-            pprint(ge.game.vars)
-            pprint(ge.game.notices)
-            continue
-        elif user_input != '':
+        if user_input != "":
             out("Choose v, m, r #, q, or press Enter to continue.")
             continue
-        text = ge.next()
-        out("Tänker...")
-        ai_response = conversation.predict(input=text)
-        out("ChrillePs val:", ai_response)
         try:
-            choice = parse_choice(ai_response, ge)
-            result = ge.next(choice)
-        except ValueError as error:
-            out(f"Action rejected: {error}")
+            decision = player.step()
+        except (PlayerError, ValueError) as error:
             runs = 0
+            if max_steps is not None:
+                raise
+            out(error)
             continue
-        out(result)
+        if decision is None:
+            break
+        completed += 1
+        out(f"{decision.choice}. <{decision.character_comment}>")
+        if debug:
+            out(json.dumps(player.last_call, ensure_ascii=False))
+        out(player.history[-1].content)
+    return completed
+
 
 @click.command()
-@click.option('--debug/--no-debug', default=False, help='debug output')
-@click.option('--story-file', type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path), help='Local Twine HTML file.')
-@click.option('--seed', type=int, help='Seed for repeatable random outcomes.')
-def cli(debug, story_file, seed):
-    if debug:
-        out("debug on")
+@click.option('--debug/--no-debug', default=False, help='Show safe model/usage/status summaries.')
+@click.option('--story-file', type=click.Path(exists=True, dir_okay=False, path_type=Path), help='Local Twine HTML file.')
+@click.option('--seed', type=int, help='Seed for repeatable game randomness (not model output).')
+@click.option('--model', type=click.Choice(['gpt-6-luna', 'gpt-6.1-sol']))
+@click.option('--memory-model', type=click.Choice(['gpt-6-luna', 'gpt-6.1-sol']), help='Reserved for CP4; no memory API calls in full-history mode.')
+@click.option('--reasoning', type=click.Choice(['none', 'low', 'medium', 'high', 'xhigh', 'max']))
+@click.option('--memory-mode', type=click.Choice(['full-history']))
+@click.option('--timeout', type=click.FloatRange(min=0.1, max=120))
+@click.option('--retries', type=click.IntRange(min=0, max=5))
+@click.option('--max-output-tokens', type=click.IntRange(min=128, max=16384))
+@click.option('--context-budget', type=click.IntRange(min=1, max=900000), help='Conservative input token budget; stops without truncating history.')
+@click.option('--max-steps', type=click.IntRange(min=1, max=1000), help='Run at most this many decisions without interactive prompts.')
+def cli(debug, story_file, seed, max_steps, **options):
+    load_dotenv(Path(__file__).with_name('.env'), override=False)
+    environment = {
+        'model': 'OPENAI_MODEL', 'memory_model': 'OPENAI_MEMORY_MODEL',
+        'reasoning': 'OPENAI_REASONING_EFFORT', 'memory_mode': 'AI_MEMORY_MODE',
+        'timeout': 'AI_TIMEOUT', 'retries': 'AI_RETRIES',
+        'max_output_tokens': 'AI_MAX_OUTPUT_TOKENS', 'context_budget': 'AI_CONTEXT_BUDGET',
+    }
+    values = {key: value if value is not None else os.getenv(environment[key]) for key, value in options.items()}
+    values = {key: value for key, value in values.items() if value is not None}
     try:
-        main(debug=debug, story_file=story_file, seed=seed)
-    except (ValueError, OSError) as error:
+        settings = Settings(**values)
+        settings.check_compatibility()
+        engine = GameEngine(Game(load_game_data(game_file=story_file), seed=seed))
+        if engine.running and not os.getenv('OPENAI_API_KEY', '').strip():
+            raise PlayerError('OPENAI_API_KEY is missing. Add it to .env or the process environment.')
+        player = Player(engine, settings)
+        play(engine, player, max_steps=max_steps, debug=debug)
+    except (PlayerError, ValueError, OSError) as error:
+        # Pydantic errors can echo input values; summarize configuration failures.
+        from pydantic import ValidationError
+        if isinstance(error, ValidationError):
+            fields = ', '.join(str(item['loc'][0]) for item in error.errors())
+            raise click.ClickException(f'Invalid configuration fields: {fields}') from error
         raise click.ClickException(str(error)) from error
+
 
 if __name__ == '__main__':
     cli()

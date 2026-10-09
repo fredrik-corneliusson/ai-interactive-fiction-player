@@ -2,8 +2,8 @@
 
 Created: 2026-10-10 (Europe/Stockholm)
 Last updated: 2026-10-10
-Status: CP1 complete for the documented console interpreter scope; CP2 not started.
-Next checkpoint: CP2 — implement the modern Responses/full-history player.
+Status: CP1 and CP2 complete for their documented scopes.
+Next checkpoint: CP3 — persistence, event logging, and observability.
 
 ## Purpose and scope
 
@@ -156,7 +156,7 @@ event log even if a character memory policy intentionally forgets information.
 | --- | --- | --- |
 | CP0 — environment and design | Complete | Local environment, downloaded stories, this plan |
 | CP1 — engine and fixtures | Complete | Reliable turn behavior and representative story fixtures |
-| CP2 — modern full-history player | Not started | Responses API, explicit configuration, structured decisions |
+| CP2 — modern full-history player | Complete | Responses API, explicit configuration, structured decisions |
 | CP3 — persistence and observability | Not started | Save/resume, event log, usage and latency reporting |
 | CP4 — hybrid memory | Not started | Batched extraction, retrieval, inspectable derived memories |
 | CP5 — comparative evaluation | Not started | Model/memory comparison and justified defaults |
@@ -272,12 +272,24 @@ ignored. The checkpoint commit is titled `Complete CP1 engine and fixture milest
 
 ## Progress log
 
+CP2 completed on 2026-10-10. See [CP2_VALIDATION.md](CP2_VALIDATION.md) for actual
+request settings, usage, verification, and remaining scope. The classic chain and
+entity memory are removed; `player.py` uses Responses/structured decisions and
+locally owned full history. Live access to `gpt-6-luna` was confirmed. Sol remains
+an explicit, untested comparison option. The CP2 Git checkpoint on
+`development/modernize-ai-player` is titled `Complete CP2 Responses and full-history milestone`.
+
+Next action: implement CP3 SQLite run storage and append-only events, save/resume,
+per-attempt usage accounting, and bounded-run budgets. Retain the context and
+transaction guarantees tested in CP2. Hybrid memory remains scheduled for CP4.
+
 | Date | Checkpoint | Work and evidence | Remaining work |
 | --- | --- | --- | --- |
 | 2026-10-10 | CP0 | Created Python 3.13.2 `.venv`; installed dependencies; `pip check` passed; verified imports, offline classic-chain execution, synthetic navigation, and manual CLI startup/quit. | Replace legacy architecture and add meaningful regression tests. |
 | 2026-10-10 | CP0 | Downloaded both Netlify games; verified 343 Part 1 and 415 Part 2 passages; checked Part 1's first transition. Updated the default source URL. | Broader conditional and Part 2 compatibility checks. |
 | 2026-10-10 | CP0 | Reviewed current OpenAI/LangChain documentation and local memory implementation. Recorded design, checkpoints, and acceptance criteria. No modernization code or paid API calls made during planning. | Start CP1, then establish the CP2 full-history baseline. |
 | 2026-10-10 | CP1 | Implemented engine/CLI fixes and limited Harlowe support; 18 offline tests, 11 browser cases, and 6,822 audit checks pass. Added persistent reference fixtures and CP1_VALIDATION.md. | CP2 Responses/full-history integration; exhaustive playthrough coverage remains outside CP1 validation. |
+| 2026-10-10 | CP2 | Replaced classic chain/entity memory with Responses, strict structured decisions, explicit settings, bounded errors/retries, full-history context budgeting, and bounded CLI runs. 32 tests and pip check pass; four live Luna requests succeeded. Removed unused dependencies and refreshed the lock. | CP3 persistence and complete usage accounting; Sol access and roleplay comparisons remain untested. |
 
 ## How to update this reference
 

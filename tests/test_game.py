@@ -129,27 +129,6 @@ class EngineTests(unittest.TestCase):
                     load_game_data(game_file=path)
 
 
-class AiLoopTests(unittest.TestCase):
-    def test_terminal_story_makes_no_model_call(self):
-        from ai_player import play
-        conversation = Mock()
-        with contextlib.redirect_stdout(io.StringIO()), patch('builtins.input', side_effect=AssertionError):
-            play(GameEngine(Game(story('End'))), conversation)
-        conversation.predict.assert_not_called()
-
-    def test_autorun_stops_at_ending_and_invalid_response_does_not_advance(self):
-        from ai_player import play
-        for response, inputs, calls, destination in [('1. <Go>', ['r 10'], 1, '1'), ('99. <Wrong>', ['', 'q'], 1, '0'), ('Refusal', ['', 'q'], 1, '0')]:
-            engine = GameEngine(Game(story('[[Go|1]]', '(set: $count to $count +1)End')))
-            conversation = Mock()
-            conversation.predict.return_value = response
-            with self.subTest(response=response), contextlib.redirect_stdout(io.StringIO()), patch('builtins.input', side_effect=inputs):
-                play(engine, conversation)
-            self.assertEqual(conversation.predict.call_count, calls)
-            self.assertEqual(engine.game._current, destination)
-            self.assertEqual(engine.game.vars.get('count', 0), 1 if destination == '1' else 0)
-
-
 class BrowserFixtureTests(unittest.TestCase):
     def test_encountered_history_has_valid_actions_and_stops_at_fixture_boundary(self):
         traces = json.loads((FIXTURES / 'encountered_history.json').read_text(encoding='utf-8'))
