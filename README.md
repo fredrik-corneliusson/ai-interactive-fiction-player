@@ -7,20 +7,24 @@ locally managed full-history context.
 ## Setup
 
 Requires Python 3.10 or newer. Verified on Windows with Python 3.13.2.
-Run these commands from the repository directory in PowerShell:
+Run these commands from the repository directory in Bash (Git Bash on Windows):
 
-```powershell
+```bash
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements-lock.txt
-Copy-Item .env.example .env
+./.venv/Scripts/python.exe -m pip install -r requirements-lock.txt
+if [ ! -f .env ]; then cp .env.example .env; fi
 ```
 
-The local `.venv` is already created in the prepared checkout. Using its Python
-executable directly avoids PowerShell activation policy issues.
-Optional activation: `.\.venv\Scripts\Activate.ps1`.
+The local `.venv` is already created in the prepared checkout. The copy command
+preserves an existing `.env`. All Windows examples use forward slashes and the
+virtual environment's Python executable directly, so activation is optional.
 
-On macOS/Linux, use `python3 -m venv .venv`, `.venv/bin/python` instead of the
-Windows executable, and `cp .env.example .env`.
+To activate it in Git Bash, run `source .venv/Scripts/activate`; you can then use
+`python` instead of `./.venv/Scripts/python.exe` in the commands below.
+
+On macOS/Linux, use `python3 -m venv .venv` and replace
+`./.venv/Scripts/python.exe` with `./.venv/bin/python`. Optional activation is
+`source .venv/bin/activate`.
 
 `requirements.txt` lists direct dependencies with version bounds;
 `requirements-lock.txt` records the exact installed versions for repeatable setup.
@@ -31,14 +35,14 @@ then regenerate the lock with `python -m pip freeze` using the virtual environme
 
 Manual play requires no API key:
 
-```powershell
-.\.venv\Scripts\python.exe game.py
+```bash
+./.venv/Scripts/python.exe game.py
 ```
 
 For AI play, set `OPENAI_API_KEY` in `.env`, then run:
 
-```powershell
-.\.venv\Scripts\python.exe ai_player.py
+```bash
+./.venv/Scripts/python.exe ai_player.py
 ```
 
 AI play makes paid API requests. The default is `gpt-6-luna` with low reasoning
@@ -49,8 +53,8 @@ summaries. `.env` and `.venv` are ignored by Git.
 
 For a bounded, non-interactive run:
 
-```powershell
-.\.venv\Scripts\python.exe ai_player.py --story-file data/del1.html --max-steps 3 --retries 0 --debug
+```bash
+./.venv/Scripts/python.exe ai_player.py --story-file data/del1.html --max-steps 3 --retries 0 --debug
 ```
 
 This makes at most three generation requests with retries disabled. The title
@@ -102,9 +106,9 @@ The prepared checkout also includes both games from
 Part 1 is the active console cache; the previous download is preserved as
 `data/twine_game.previous.html`. Select a story without replacing the cache:
 
-```powershell
-.\.venv\Scripts\python.exe game.py --story-file data/del2.html --seed 7
-.\.venv\Scripts\python.exe ai_player.py --story-file data/del1.html --seed 7
+```bash
+./.venv/Scripts/python.exe game.py --story-file data/del2.html --seed 7
+./.venv/Scripts/python.exe ai_player.py --story-file data/del1.html --seed 7
 ```
 
 The seed makes random outcomes repeatable. The AI character prompt was written
@@ -134,11 +138,11 @@ encountered transcript, rendered passage, variables, and random state in
 another path with `--database`; ignore any custom database you place in the repo.
 No new dependency is needed: persistence uses Python's SQLite library.
 
-```powershell
-.\.venv\Scripts\python.exe ai_player.py --story-file data/del1.html --max-steps 3 --request-budget 10 --token-budget 100000
-.\.venv\Scripts\python.exe ai_player.py --list-runs
-.\.venv\Scripts\python.exe ai_player.py --run-info RUN_ID
-.\.venv\Scripts\python.exe ai_player.py --resume RUN_ID --max-steps 3
+```bash
+./.venv/Scripts/python.exe ai_player.py --story-file data/del1.html --max-steps 3 --request-budget 10 --token-budget 100000
+./.venv/Scripts/python.exe ai_player.py --list-runs
+./.venv/Scripts/python.exe ai_player.py --run-info RUN_ID
+./.venv/Scripts/python.exe ai_player.py --resume RUN_ID --max-steps 3
 ```
 
 Replace `RUN_ID` with the printed ID. Listing and inspection require no API key or
@@ -197,12 +201,12 @@ implementation checkpoints, acceptance criteria, and progress log.
 
 Run the offline regression suite (no API key, browser, or game download needed):
 
-```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```bash
+./.venv/Scripts/python.exe -m unittest discover -s tests -v
 ```
 
 The optional whole-story audit requires the downloaded games:
 
-```powershell
-.\.venv\Scripts\python.exe scripts/audit_stories.py
+```bash
+./.venv/Scripts/python.exe scripts/audit_stories.py
 ```
