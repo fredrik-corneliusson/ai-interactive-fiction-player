@@ -257,12 +257,12 @@ class Player:
                             raise ValueError('Missing or malformed structured response')
                         validated = validate(result['parsed'])
                     except (ValueError, ValidationError) as error:
-                        metadata['category'] = 'invalid_decision' if purpose == 'decision' else 'invalid_memory'
+                        metadata['category'] = f'invalid_{purpose}'
                         if attempt == retries:
                             raise PlayerError(f'Invalid structured {purpose} or unsupported source/choice; retries exhausted. No action applied.') from error
                         retry_delay = 0
                     else:
-                        metadata['category'] = 'valid_decision' if purpose == 'decision' else 'valid_memory'
+                        metadata['category'] = f'valid_{purpose}'
                         return validated
             finally:
                 metadata['seconds'] = round(time.monotonic() - started, 3)

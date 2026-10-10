@@ -1,0 +1,39 @@
+{
+  "version": "cp5-v1",
+  "cases": [
+    {
+      "id": "del1-recall", "trace": "del1",
+      "probes": [
+        {"id": "company", "question": "Vilket bolagsnamn stod vid Jennys namn på porten?", "answer_groups": [["Love Films"]], "support": [{"turns": [3, 4], "terms": [["Love Films"]]}]},
+        {"id": "gift", "question": "Hur mycket pengar gav den äldre tanten dig?", "answer_groups": [["10", "tio"]], "support": [{"turns": [5], "terms": [["10-lapp"]]}]},
+        {"id": "jenny-location", "question": "Vilken exakt adress bor Jenny på nu?", "answer_groups": [], "support": []}
+      ]
+    },
+    {
+      "id": "del2-recall", "trace": "del2",
+      "probes": [
+        {"id": "pizzeria", "question": "Vad hette pizzerian där ni tog farväl av Örjan?", "answer_groups": [["Verona"]], "support": [{"turns": [1], "terms": [["Verona"]]}]},
+        {"id": "suspicions", "question": "Vilka skilda förklaringar gav Britt och Krukan till morden? Redovisa det som deras påståenden, inte som bevisade fakta.", "answer_groups": [["Britt"], ["ung", "barn"], ["Krukan"], ["snut", "polis"], ["säpo"]], "support": [{"turns": [6], "terms": [["skitungar"], ["Britt"]]}, {"turns": [6], "terms": [["snuten"], ["säpo"], ["Krukan"]]}]},
+        {"id": "killer", "question": "Vem är bevisligen Örjans mördare?", "answer_groups": [], "support": []}
+      ]
+    },
+    {
+      "id": "contradiction-and-belief", "trace": null,
+      "turns": [
+        {"turn": 0, "passage": "Earlier", "observation": "Jenny säger: Jag bor kvar här på Hornsgatan.\n[1. Gå vidare.]", "available_choices": ["Gå vidare."], "selected_choice": 1, "character_comment": "Jenny gav mig en miljon kronor, det minns jag säkert."},
+        {"turn": 1, "passage": "Bench", "observation": "Du väntar på en bänk. Ingen pratar om pengar.\n[1. Vänta.]", "available_choices": ["Vänta."], "selected_choice": 1},
+        {"turn": 2, "passage": "Rain", "observation": "Regnet börjar falla. Du drar upp kragen.\n[1. Gå till porten.]", "available_choices": ["Gå till porten."], "selected_choice": 1},
+        {"turn": 3, "passage": "Later", "observation": "Portvakten säger: Jenny har flyttat från Hornsgatan. Jag vet inte vart.\n[1. Gå tillbaka.]", "available_choices": ["Gå tillbaka."], "selected_choice": 1},
+        {"turn": 4, "passage": "Street", "observation": "En bil passerar. Du hittar inget brev eller någon ny adress.\n[1. Fortsätt.]", "available_choices": ["Fortsätt."], "selected_choice": 1},
+        {"turn": 5, "passage": "Shop", "observation": "Butiken är stängd. Det är tyst på gatan.\n[1. Vänta.]", "available_choices": ["Vänta."], "selected_choice": 1},
+        {"turn": 6, "passage": "Corner", "observation": "Du står vid ett gatuhörn och hör steg bakom dig.\n[1. Se dig om.]", "available_choices": ["Se dig om."], "selected_choice": 1},
+        {"turn": 7, "passage": "Now", "observation": "Du funderar på Jenny och portvakten. Du kan söka upp Jenny eller fråga portvakten igen.\n[1. Leta efter Jenny.]\n[2. Fråga portvakten igen.]", "available_choices": ["Leta efter Jenny.", "Fråga portvakten igen."], "selected_choice": null}
+      ],
+      "probes": [
+        {"id": "conflict", "question": "Vilka motstridiga uppgifter har du fått om var Jenny bor? Vem sade vad? Behåll osäkerheten.", "answer_groups": [["Jenny"], ["kvar", "här"], ["portvakt"], ["flytt"]], "support": [{"turns": [0], "terms": [["bor kvar"]]}, {"turns": [3], "terms": [["flyttat"]]}]},
+        {"id": "invented-gift", "question": "Hur många kronor har Jenny faktiskt gett dig enligt berättelsen? Dina egna rollkommentarer räknas inte som bekräftelse.", "answer_groups": [], "support": []},
+        {"id": "unvisited-address", "question": "Vilken ny exakt adress har Jenny?", "answer_groups": [], "support": []}
+      ]
+    }
+  ]
+}

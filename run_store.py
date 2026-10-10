@@ -46,7 +46,8 @@ def encode(value):
 
 
 class RunStore:
-    def __init__(self, path):
+    def __init__(self, path, *, request_guard=None):
+        self.request_guard = request_guard
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         self.db = sqlite3.connect(path, timeout=10)
@@ -228,8 +229,12 @@ class RunSession:
                 raise BudgetExceeded('Run request budget exhausted. No request sent.')
             if usage['budget_tokens'] + reservation > settings.token_budget:
                 raise BudgetExceeded('Run token budget cannot cover the next request reservation. No request sent.')
+            if self.store.request_guard is not None:
+                self.store.request_guard(self.store, settings, reservation)
             request_id = self.store._event(self.run_id, 'request_started',
-                {'model': settings.model, 'attempt': attempt, 'token_reservation': reservation, 'purpose': purpose})
+                {'model': settings.model, 'attempt': attempt, 'token_reservation': reservation, 'purpose': purpose,
+                 'input_estimate': reservation - settings.max_output_tokens,
+                 'max_output_tokens': settings.max_output_tokens})
         self.revision += 1
         return request_id
 

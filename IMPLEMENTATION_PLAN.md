@@ -2,8 +2,8 @@
 
 Created: 2026-10-10 (Europe/Stockholm)
 Last updated: 2026-10-10
-Status: CP1 through CP4 complete for their documented scopes.
-Next checkpoint: CP5 — comparative model and memory evaluation.
+Status: CP1 through CP5 complete for their documented scopes; CP6 not started.
+Next checkpoint: CP6 — documentation and handoff.
 
 ## Purpose and scope
 
@@ -159,7 +159,7 @@ event log even if a character memory policy intentionally forgets information.
 | CP2 — modern full-history player | Complete | Responses API, explicit configuration, structured decisions |
 | CP3 — persistence and observability | Complete | Save/resume, event log, usage and latency reporting |
 | CP4 — hybrid memory | Complete | Batched extraction, retrieval, inspectable derived memories |
-| CP5 — comparative evaluation | Not started | Model/memory comparison and justified defaults |
+| CP5 — comparative evaluation | Complete | Reproducible comparison; retain Luna/full-history; hybrid experimental |
 | CP6 — documentation and handoff | Not started | Reproducible setup, CLI guide, validated dependency lock |
 
 ### CP1 — engine correctness and evaluation fixtures
@@ -308,12 +308,13 @@ append-only records, batch progress, and selected-context logs. All 69 tests and
 pip check pass in Git Bash; no paid requests were made. The CP4 Git checkpoint
 is titled `Complete CP4 hybrid memory milestone`.
 
-Next action: implement CP5 reproducible full-history/hybrid comparison on fixed
-encountered-history fixtures, using repeated trials where practical. First confirm
-live memory-schema acceptance, then measure recall/source fidelity, contradictions,
-invented memories, valid decisions, Swedish characterization, refusals, usage,
-and latency. Retain the original transcript, hidden/unvisited-data boundaries,
-and CP3 persisted budgets. Full-history stays the default pending evidence.
+Next action: implement CP6 documentation and handoff. Verify fresh installation,
+the dependency lock, and normal startup paths; reconcile setup, model/memory
+settings, commands, save/resume, cost assumptions, and supported Twine behavior.
+CP5 evidence supports retaining Luna/full-history. Hybrid remains experimental:
+strict extraction frequently rejects paraphrases, entity tags, and quotations.
+See CP5_VALIDATION.md and reports/cp5-20261010.json. Improving extraction and
+testing longer histories are explicit follow-ups, not established CP5 benefits.
 
 Post-CP4 console fix (2026-10-10): added explicit interactive help and long-name,
 case-insensitive, and slash-prefixed command aliases; retained existing shortcuts.
@@ -322,7 +323,7 @@ Documented interactive versus `--max-steps` behavior and strict `run N` argument
 All 74 offline tests pass in Git Bash. A real Git Bash stdin smoke exercised help,
 memory, history, variables, usage, save, and exit with zero model requests.
 Git checkpoint: `Restore console help and command aliases`.
-CP5 remains the next checkpoint.
+The console fix preceded the CP5 evaluation recorded below.
 
 | Date | Checkpoint | Work and evidence | Remaining work |
 | --- | --- | --- | --- |
@@ -333,6 +334,7 @@ CP5 remains the next checkpoint.
 | 2026-10-10 | CP2 | Replaced classic chain/entity memory with Responses, strict structured decisions, explicit settings, bounded errors/retries, full-history context budgeting, and bounded CLI runs. 32 tests and pip check pass; four live Luna requests succeeded. Removed unused dependencies and refreshed the lock. | CP3 persistence and complete usage accounting; Sol access and roleplay comparisons remain untested. |
 | 2026-10-10 | CP3 | Added SQLite checkpoints and append-only events; story/persona/settings/transcript/RNG save and resume; atomic actions, revision protection, per-attempt usage/latency/error logs, persistent request/token budgets, and explicit interruption recovery. 48 offline tests and pip check pass. Added CP3_VALIDATION.md and CLI documentation. No paid calls. Git checkpoint: `Complete CP3 persistence and observability milestone`. | CP4 hybrid memory, batched extraction, source-linked retrieval, and inspection. |
 | 2026-10-10 | CP4 | Implemented hybrid recent/retrieved context; batched strict memory extraction; exact source/quote validation; separate observations, beliefs, and interpretations; deterministic bounded retrieval; append-only SQLite records and progress; shared budgets and purpose telemetry; m/h inspection and Git Bash guide. 69 tests and pip check pass. Added CP4_VALIDATION.md. No paid calls. Git checkpoint: `Complete CP4 hybrid memory milestone`. | CP5 live schema acceptance and comparative evaluation; memory and roleplay quality remain unbenchmarked. |
+| 2026-10-10 | CP5 | Added fixed-history recall and real gameplay harness, campaign-wide request/token/estimated-cost accounting, failure-preserving scores, and offline report rebuilding. Main campaign: 32 trials, 64 requests, 112,934 tokens, ~$0.12327; exploratory smoke: 4 requests, 6,794 tokens, ~$0.001557. Both candidates accessible and live memory schema accepted. Full-history recall Luna 16/18 strict (17/18 after reviewing one lexical miss), Sol 18/18; hybrid failed 9/12 fixtures and 3/4 gameplay runs on strict memory validation. Retain Luna/full-history; hybrid experimental. 84 offline tests in Git Bash and pip check pass. CP5_VALIDATION.md and reports/cp5-20261010.json preserve protocol, evidence, source hashes, costs, and limitations. | CP6 documentation/handoff. Follow-up: improve extraction reliability and test longer paired histories; no evidence yet for embeddings, forgetting, or human-memory equivalence. |
 
 ## How to update this reference
 

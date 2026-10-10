@@ -113,7 +113,9 @@ To try hybrid mode with a bounded run in Git Bash:
 
 The request budget counts both decisions and memory extraction, so this run sends
 at most 10 requests and may stop before eight actions. Full-history remains the
-default and comparison baseline; hybrid quality has not yet been benchmarked.
+default. Hybrid is experimental: the CP5 comparison found frequent extraction
+validation failures that stop play before the next action. See
+[CP5_VALIDATION.md](CP5_VALIDATION.md) for the measured tradeoffs and follow-up.
 
 Hybrid mode combines recent verbatim experience with retrieved event, entity, and
 intention records. Extraction normally runs before a decision when four new
@@ -267,7 +269,56 @@ implementation checkpoints, acceptance criteria, and progress log.
 - `memory.py` defines cited memory extraction, provenance validation, and
   deterministic bounded retrieval. SQLite schema version 2 adds derived records
   while preserving existing CP3 runs.
-- Comparative memory/model evaluation is the next checkpoint.
+- `evaluation.py` and `scripts/evaluate.py` compare fixed encountered histories
+  and bounded gameplay. See [CP5_VALIDATION.md](CP5_VALIDATION.md) for results,
+  default selection, and limitations.
+
+## Model and memory evaluation
+
+Preview the protocol without an API key or paid requests (Git Bash):
+
+```bash
+./.venv/Scripts/python.exe scripts/evaluate.py --dry-run
+```
+
+Run the comparison after downloading both stories and setting `OPENAI_API_KEY`:
+
+```bash
+./.venv/Scripts/python.exe scripts/evaluate.py --output-dir data/evaluations/my-comparison
+```
+
+The default campaign compares Luna and Sol in full-history and hybrid modes,
+with two repetitions of three fixed histories and four gameplay steps per
+story/model/mode. Memory extraction always uses Luna. Requests use low reasoning,
+no retries, and a 45-second timeout. Campaign allowances are 96 requests,
+1,000,000 accounted tokens, and $2 estimated cost; extraction and failed attempts
+count toward them. Change these using `--request-budget`, `--token-budget`, and
+`--cost-budget`. Estimates use the dated rates in `evaluation.py`, including
+reported cache reads/writes; unknown usage retains a conservative reservation.
+The dollar allowance is local accounting, not a provider billing cap.
+
+For a smaller paid smoke, use:
+
+```bash
+./.venv/Scripts/python.exe scripts/evaluate.py --suite smoke --models gpt-6-luna --request-budget 4 --cost-budget 0.02 --output-dir data/evaluations/my-smoke
+```
+
+Each campaign requires a new output directory. Its manifest preserves fixtures,
+prompts, schemas, settings, and pricing; `results.jsonl` retains successful and
+failed trials, citations, generated memories, and telemetry; `summary.json`
+contains aggregates. These local artifacts and their SQLite database are ignored
+by Git. Fixed-history fixture runs replay scripted actions and are for evaluation
+only; do not resume them as games. Gameplay runs exercise the actual engine.
+Rebuild a summary without a key or additional requests:
+
+```bash
+./.venv/Scripts/python.exe scripts/evaluate.py --report-only --output-dir data/evaluations/my-comparison
+```
+
+Recall scoring checks expected terms and exact visible source quotations. It can
+miss valid paraphrases, so inspect the answers as well as the aggregate scores.
+Trials are small diagnostics, not a benchmark of human memory or a guarantee
+that every story passage is playable.
 
 ## Verification
 
