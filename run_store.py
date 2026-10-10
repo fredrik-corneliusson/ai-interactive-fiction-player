@@ -52,7 +52,7 @@ class RunStore:
         self.db = sqlite3.connect(path, timeout=10)
         self.db.row_factory = sqlite3.Row
         version = self.db.execute('PRAGMA user_version').fetchone()[0]
-        if version not in (0, 1):
+        if version not in (0, 1, 2):
             self.db.close()
             raise StoreError('Unsupported run database version.')
         self.db.execute('PRAGMA foreign_keys=ON')
@@ -73,7 +73,18 @@ class RunStore:
                 BEGIN SELECT RAISE(ABORT, 'Events are append-only'); END;
             CREATE TRIGGER IF NOT EXISTS events_no_delete BEFORE DELETE ON events
                 BEGIN SELECT RAISE(ABORT, 'Events are append-only'); END;
-            PRAGMA user_version=1;
+            CREATE TABLE IF NOT EXISTS memories (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                run_id TEXT NOT NULL REFERENCES runs(id),
+                batch_event_id INTEGER NOT NULL REFERENCES events(id),
+                record TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS memories_by_run ON memories(run_id, id);
+            CREATE TRIGGER IF NOT EXISTS memories_no_update BEFORE UPDATE ON memories
+                BEGIN SELECT RAISE(ABORT, 'Memories are append-only'); END;
+            CREATE TRIGGER IF NOT EXISTS memories_no_delete BEFORE DELETE ON memories
+                BEGIN SELECT RAISE(ABORT, 'Memories are append-only'); END;
+            PRAGMA user_version=2;
         ''')
 
     def close(self):
@@ -95,12 +106,13 @@ class RunStore:
                             (run_id, serialized, hashlib.sha256(serialized.encode()).hexdigest(),
                              player.settings.model_dump_json(), player.persona, encode(snapshot(player))))
             self._event(run_id, 'created', {'story_hash': hashlib.sha256(serialized.encode()).hexdigest(),
+                                          'passage': player.engine.game._current,
                                           'observation': player.history[-1].content})
         session = RunSession(self, run_id, 0)
         player.session = session
         return session
 
-    def resume(self, run_id, *, model=None, sleep=None):
+    def resume(self, run_id, *, model=None, sleep=None, memory_model=None):
         from player import Player, Settings
         row = self.db.execute('SELECT * FROM runs WHERE id=?', (run_id,)).fetchone()
         if row is None:
@@ -121,6 +133,7 @@ class RunStore:
         player.settings.check_compatibility()
         player.persona = row['persona']
         player.model = model
+        player.memory_model = memory_model
         player.sleep = sleep if sleep is not None else time.sleep
         player.last_call = None
         player.calls = []
@@ -158,6 +171,30 @@ class RunStore:
         return [dict(row) for row in self.db.execute(
             'SELECT id,created,revision,story_hash FROM runs ORDER BY created,id')]
 
+    def sources(self, run_id):
+        """Only committed, encountered material. Never consult hidden game variables."""
+        result = []
+        for event in self.events(run_id):
+            if event['kind'] not in ('created', 'action'):
+                continue
+            payload = event['payload']
+            decision = payload.get('decision', {})
+            result.append({'source_id': event['id'], 'turn': len(result),
+                'passage': payload.get('passage', '(initial passage)'),
+                'observation': payload['observation'],
+                'action': f"Valde alternativ {decision['choice']}." if decision else '',
+                'character_comment': decision.get('character_comment', '')})
+        return result
+
+    def pending_sources(self, run_id):
+        updates = [event for event in self.events(run_id) if event['kind'] == 'memory_updated']
+        last = updates[-1]['payload']['last_source_id'] if updates else 0
+        return [source for source in self.sources(run_id) if source['source_id'] > last]
+
+    def memories(self, run_id):
+        return [{'id': row['id'], **json.loads(row['record'])} for row in self.db.execute(
+            'SELECT id,record FROM memories WHERE run_id=? ORDER BY id', (run_id,))]
+
     def report(self, run_id):
         row = self.db.execute('SELECT settings,state FROM runs WHERE id=?', (run_id,)).fetchone()
         if row is None:
@@ -165,7 +202,9 @@ class RunStore:
         return {'run_id': run_id, 'settings': json.loads(row['settings']),
                 'passage': json.loads(row['state'])['passage'],
                 'running': json.loads(row['state'])['running'], 'usage': self.usage(run_id),
-                'attempts': [e for e in self.events(run_id) if e['kind'].startswith('request_')]}
+                'attempts': [e for e in self.events(run_id) if e['kind'].startswith('request_')],
+                'memory': self.resume(run_id).inspect_memory(),
+                'memory_events': [e for e in self.events(run_id) if e['kind'] in ('memory_updated', 'context_selected')]}
 
 
 class RunSession:
@@ -178,7 +217,7 @@ class RunSession:
         if cursor.rowcount != 1:
             raise StoreError('Run changed in another session. Resume it again before continuing.')
 
-    def begin_request(self, settings, reservation, attempt):
+    def begin_request(self, settings, reservation, attempt, *, purpose='decision'):
         from player import BudgetExceeded
         with self.store.db:
             self._claim()  # Serializes both budget check and reservation.
@@ -190,7 +229,7 @@ class RunSession:
             if usage['budget_tokens'] + reservation > settings.token_budget:
                 raise BudgetExceeded('Run token budget cannot cover the next request reservation. No request sent.')
             request_id = self.store._event(self.run_id, 'request_started',
-                {'model': settings.model, 'attempt': attempt, 'token_reservation': reservation})
+                {'model': settings.model, 'attempt': attempt, 'token_reservation': reservation, 'purpose': purpose})
         self.revision += 1
         return request_id
 
@@ -221,4 +260,33 @@ class RunSession:
                               {'decision': decision.model_dump(), 'passage': player.engine.game._current,
                                'observation': player.history[-1].content}
                               if decision else {'passage': player.engine.game._current})
+        self.revision += 1
+
+    def commit_memories(self, sources, batch):
+        from memory import validate_batch
+        # Validate against local, run-scoped sources again at the write boundary.
+        local = self.store.pending_sources(self.run_id)[:len(sources)]
+        if local != sources:
+            raise StoreError('Memory source batch changed; resume before continuing.')
+        validate_batch(batch.model_dump(), local)
+        refs = {s['source_id']: {'source_id': s['source_id'], 'turn': s['turn'], 'passage': s['passage']} for s in local}
+        with self.store.db:
+            self._claim()
+            batch_id = self.store._event(self.run_id, 'memory_updated',
+                {'source_ids': [s['source_id'] for s in sources], 'last_source_id': sources[-1]['source_id'],
+                 'record_count': len(batch.records), 'policy_version': 'cp4-v1'})
+            for record in batch.records:
+                data = record.model_dump()
+                data['source_refs'] = [refs[e.source_id] for e in record.evidence]
+                self.store.db.execute('INSERT INTO memories(run_id,batch_event_id,record) VALUES(?,?,?)',
+                                      (self.run_id, batch_id, encode(data)))
+        self.revision += 1
+
+    def record_context(self, selected, recent_ids, estimate):
+        with self.store.db:
+            self._claim()
+            self.store._event(self.run_id, 'context_selected',
+                {'memory_ids': [record['id'] for record in selected], 'recent_source_ids': recent_ids,
+                 'input_estimate': estimate,
+                 'memory_bytes': len(encode(selected).encode('utf-8')), 'policy_version': 'cp4-v1'})
         self.revision += 1

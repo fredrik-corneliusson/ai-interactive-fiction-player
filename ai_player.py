@@ -35,8 +35,15 @@ def play(engine, player, *, max_steps=None, debug=False):
         if user_input == "q":
             break
         if user_input == "m":
+            if player.settings.memory_mode == 'hybrid':
+                out(json.dumps(player.inspect_memory(), ensure_ascii=False, indent=2))
+            else:
+                for message in player.history:
+                    out(f"{message.type}: {message.content}")
+            continue
+        if user_input == 'h':
             for message in player.history:
-                out(f"{message.type}: {message.content}")
+                out(f'{message.type}: {message.content}')
             continue
         if user_input == "v":
             out(engine.game._current)
@@ -63,7 +70,7 @@ def play(engine, player, *, max_steps=None, debug=False):
                 out(error)
             continue
         if user_input != "":
-            out("Choose v, m, u, s, r #, q, or press Enter to continue.")
+            out("Choose v, m, h, u, s, r #, q, or press Enter to continue.")
             continue
         try:
             decision = player.step()
@@ -88,13 +95,20 @@ def play(engine, player, *, max_steps=None, debug=False):
 @click.option('--story-file', type=click.Path(exists=True, dir_okay=False, path_type=Path), help='Local Twine HTML file.')
 @click.option('--seed', type=int, help='Seed for repeatable game randomness (not model output).')
 @click.option('--model', type=click.Choice(['gpt-6-luna', 'gpt-6.1-sol']))
-@click.option('--memory-model', type=click.Choice(['gpt-6-luna', 'gpt-6.1-sol']), help='Reserved for CP4; no memory API calls in full-history mode.')
+@click.option('--memory-model', type=click.Choice(['gpt-6-luna', 'gpt-6.1-sol']), help='Batched extractor model; unused in full-history mode.')
 @click.option('--reasoning', type=click.Choice(['none', 'low', 'medium', 'high', 'xhigh', 'max']))
-@click.option('--memory-mode', type=click.Choice(['full-history']))
+@click.option('--memory-mode', type=click.Choice(['full-history', 'hybrid']))
+@click.option('--memory-reasoning', type=click.Choice(['none', 'low', 'medium', 'high', 'xhigh', 'max']))
+@click.option('--recent-turns', type=click.IntRange(min=1, max=20), help='Complete recent action pairs plus the current observation in hybrid mode.')
+@click.option('--memory-update-interval', type=click.IntRange(min=1, max=20), help='New encountered sources per extraction batch; update sooner before recent context would lose an unprocessed source.')
+@click.option('--memory-input-budget', type=click.IntRange(min=1, max=900000), help='Conservative extractor input allowance; complete sources only.')
+@click.option('--memory-context-budget', type=click.IntRange(min=1, max=100000), help='UTF-8 byte allowance for retrieved memory JSON, before message wrapper.')
+@click.option('--memory-limit', type=click.IntRange(min=1, max=32), help='Maximum recalled memory records per decision.')
+@click.option('--memory-max-output-tokens', type=click.IntRange(min=128, max=16384))
 @click.option('--timeout', type=click.FloatRange(min=0.1, max=120))
 @click.option('--retries', type=click.IntRange(min=0, max=5))
 @click.option('--max-output-tokens', type=click.IntRange(min=128, max=16384))
-@click.option('--context-budget', type=click.IntRange(min=1, max=900000), help='Conservative input token budget; stops without truncating history.')
+@click.option('--context-budget', type=click.IntRange(min=1, max=900000), help='Conservative decision input allowance; stops without silently trimming context.')
 @click.option('--max-steps', type=click.IntRange(min=1, max=1000), help='Run at most this many decisions without interactive prompts.')
 @click.option('--request-budget', type=click.IntRange(min=1), help='Total attempts allowed across this run, including retries and resumes.')
 @click.option('--token-budget', type=click.IntRange(min=1), help='Run token allowance; reserve input estimate plus maximum output before each attempt.')
@@ -111,6 +125,10 @@ def cli(debug, story_file, seed, max_steps, database, resume, list_runs, run_inf
         'timeout': 'AI_TIMEOUT', 'retries': 'AI_RETRIES',
         'max_output_tokens': 'AI_MAX_OUTPUT_TOKENS', 'context_budget': 'AI_CONTEXT_BUDGET',
         'request_budget': 'AI_REQUEST_BUDGET', 'token_budget': 'AI_TOKEN_BUDGET',
+        'memory_reasoning': 'OPENAI_MEMORY_REASONING_EFFORT', 'recent_turns': 'AI_RECENT_TURNS',
+        'memory_update_interval': 'AI_MEMORY_UPDATE_INTERVAL', 'memory_input_budget': 'AI_MEMORY_INPUT_BUDGET',
+        'memory_context_budget': 'AI_MEMORY_CONTEXT_BUDGET', 'memory_limit': 'AI_MEMORY_LIMIT',
+        'memory_max_output_tokens': 'AI_MEMORY_MAX_OUTPUT_TOKENS',
     }
     values = {key: value if value is not None else os.getenv(environment[key]) for key, value in options.items()}
     values = {key: value for key, value in values.items() if value is not None}

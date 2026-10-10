@@ -2,7 +2,7 @@
 
 A console player for a Swedish Twine adventure. Play manually or let an AI
 choose actions in character, using LangChain's OpenAI Responses integration and
-locally managed full-history context.
+locally managed full-history or hybrid memory context.
 
 ## Setup
 
@@ -47,8 +47,9 @@ For AI play, set `OPENAI_API_KEY` in `.env`, then run:
 
 AI play makes paid API requests. The default is `gpt-6-luna` with low reasoning
 effort and one structured decision per turn; transient failures or invalid
-decisions can trigger bounded retries. There are no entity-summary calls in this
-milestone. Use `--debug` for safe model, response-status, usage, and latency
+decisions can trigger bounded retries. Full-history mode makes no memory calls;
+hybrid mode adds one batched extraction request when an update is due.
+Use `--debug` for safe model, response-status, usage, and latency
 summaries. `.env` and `.venv` are ignored by Git.
 
 For a bounded, non-interactive run:
@@ -71,15 +72,22 @@ API key; see `.env.example` for optional settings.
 | Option | Environment variable | Default |
 | --- | --- | --- |
 | `--model` | `OPENAI_MODEL` | `gpt-6-luna` |
-| `--memory-model` | `OPENAI_MEMORY_MODEL` | `gpt-6-luna` (reserved for CP4; unused here) |
+| `--memory-model` | `OPENAI_MEMORY_MODEL` | `gpt-6-luna` (hybrid extractor) |
 | `--reasoning` | `OPENAI_REASONING_EFFORT` | `low` |
 | `--memory-mode` | `AI_MEMORY_MODE` | `full-history` |
+| `--memory-reasoning` | `OPENAI_MEMORY_REASONING_EFFORT` | `low` |
 | `--timeout` | `AI_TIMEOUT` | 30 seconds per request |
 | `--retries` | `AI_RETRIES` | 2 additional attempts per decision |
 | `--max-output-tokens` | `AI_MAX_OUTPUT_TOKENS` | 2048 (includes reasoning tokens) |
-| `--context-budget` | `AI_CONTEXT_BUDGET` | 64000 conservative input token estimate |
+| `--context-budget` | `AI_CONTEXT_BUDGET` | 64000 conservative decision input estimate |
 | `--request-budget` | `AI_REQUEST_BUDGET` | 100 attempts per saved run |
 | `--token-budget` | `AI_TOKEN_BUDGET` | 1000000 tokens per saved run |
+| `--recent-turns` | `AI_RECENT_TURNS` | 4 complete action pairs plus current observation |
+| `--memory-update-interval` | `AI_MEMORY_UPDATE_INTERVAL` | 4 encountered sources per update |
+| `--memory-input-budget` | `AI_MEMORY_INPUT_BUDGET` | 32000 conservative extraction input estimate |
+| `--memory-context-budget` | `AI_MEMORY_CONTEXT_BUDGET` | 8000 bytes of retrieved memory JSON |
+| `--memory-limit` | `AI_MEMORY_LIMIT` | 8 recalled records per decision |
+| `--memory-max-output-tokens` | `AI_MEMORY_MAX_OUTPUT_TOKENS` | 4096, including reasoning |
 
 Supported model IDs are explicitly `gpt-6-luna` and `gpt-6.1-sol`; there is no
 automatic fallback. Sol requires `low` reasoning or higher. No temperature or
@@ -88,12 +96,64 @@ other sampling override is sent. Sol's account access has not been live-tested.
 Full-history mode sends every encountered observation and successfully applied
 decision. It does not send hidden variables or unvisited passages. Responses use
 `store=False`, and no server-side response chain is used. History and game state
-are saved locally after each successful action. Hybrid memory belongs to CP4.
+are saved locally after each successful action.
 
 The context budget uses a conservative UTF-8 byte estimate plus schema/envelope
 allowance, rather than an exact provider token count. If exceeded, the player
 stops before making a request and preserves all history. It never silently trims
 or summarizes the full-history baseline. Increase the budget explicitly if needed.
+
+## Hybrid memory
+
+To try hybrid mode with a bounded run in Git Bash:
+
+```bash
+./.venv/Scripts/python.exe ai_player.py --story-file data/del1.html --memory-mode hybrid --max-steps 8 --retries 0 --request-budget 10 --debug
+```
+
+The request budget counts both decisions and memory extraction, so this run sends
+at most 10 requests and may stop before eight actions. Full-history remains the
+default and comparison baseline; hybrid quality has not yet been benchmarked.
+
+Hybrid mode combines recent verbatim experience with retrieved event, entity, and
+intention records. Extraction normally runs before a decision when four new
+encountered sources are available, or sooner when an unprocessed source would
+leave the recent window. Each source is an initial observation or a committed
+action with its resulting observation and separately labeled character comment.
+One request handles all entities in the oldest pending batch; there are no
+per-entity calls or automatic extraction retries.
+
+Each record has exact source quotes, event IDs, turn/passage references, salience,
+and an epistemic label: quoted `observation`, expressed `character_belief`, or
+generated `interpretation`. Observation records must be verbatim excerpts and
+cannot cite character comments. A quote records what appeared in the narrative,
+including possibly unreliable dialogue, rather than establishing world truth.
+Contradictory evidence is retained as separate records. Local validation rejects
+unknown sources, fabricated quotes, and entity tags absent from the evidence;
+it does not prove that a model's interpretation or classification is correct.
+
+Retrieval uses keyword overlap, matching entity tags, salience, an intention
+bonus, and recency to break ties. It selects at most eight records that fit the
+memory JSON byte allowance, then adds the configured recent window. Older
+unprocessed sources remain verbatim until extracted. Extraction batches include
+complete sources only; neither extraction nor the final decision context silently
+truncates an oversized source. The overall decision input budget applies to the
+assembled prompt, including persona and memory wrapper.
+
+The full transcript remains intact in SQLite. Derived memories, batch progress,
+and selected-context logs persist across resume. Failed extraction stops before
+an action and preserves its source backlog; a successful extraction can remain
+saved even if the following decision fails. Terminal passages make no further
+requests, so a final pending batch may remain unextracted. Memory requests share
+the run's request/token budgets and interrupted-request recovery policy.
+
+Use `m` to inspect stored records, selected records, pending sources, and the last
+logged context. Inspection makes no API calls; when `update_due` is true, the
+selection is a preview that can change after the next extraction. Use `h` for
+the complete transcript or `--run-info RUN_ID` for persisted memory and call logs.
+No embeddings, automated contradiction resolution, or deliberate forgetting are
+implemented. These are experiments for later evaluation, not assumptions about
+human memory. See [CP4_VALIDATION.md](CP4_VALIDATION.md).
 
 Both modes download Part 1 from `https://fordarvet.netlify.app/del1`
 on their first run and cache it in `data/twine_game.html` (ignored by Git).
@@ -124,7 +184,8 @@ AI play:
 
 - Enter: ask the AI to choose the next action.
 - `r #`: automatically run the requested number of steps.
-- `m`: show the complete encountered history and committed decisions.
+- `m`: inspect hybrid memories and selection; in full-history mode, show history.
+- `h`: show the complete encountered history and committed decisions in either mode.
 - `v`: show variables and the current passage.
 - `u`: show cumulative request, token, and latency accounting.
 - `s`: explicitly save the current checkpoint (actions already save automatically).
@@ -195,7 +256,10 @@ implementation checkpoints, acceptance criteria, and progress log.
   notices. Other unsupported syntax raises a passage-specific error.
 - `run_store.py` owns SQLite checkpoints, append-only events, run isolation, and
   persisted budget accounting. See [CP3_VALIDATION.md](CP3_VALIDATION.md).
-- Hybrid memory is the next checkpoint.
+- `memory.py` defines cited memory extraction, provenance validation, and
+  deterministic bounded retrieval. SQLite schema version 2 adds derived records
+  while preserving existing CP3 runs.
+- Comparative memory/model evaluation is the next checkpoint.
 
 ## Verification
 

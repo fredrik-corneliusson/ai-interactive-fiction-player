@@ -38,7 +38,14 @@ class Settings(BaseModel):
     model: Literal["gpt-6-luna", "gpt-6.1-sol"] = "gpt-6-luna"
     memory_model: Literal["gpt-6-luna", "gpt-6.1-sol"] = "gpt-6-luna"
     reasoning: Literal["none", "low", "medium", "high", "xhigh", "max"] = "low"
-    memory_mode: Literal["full-history"] = "full-history"
+    memory_mode: Literal["full-history", "hybrid"] = "full-history"
+    memory_reasoning: Literal["none", "low", "medium", "high", "xhigh", "max"] = "low"
+    recent_turns: int = Field(default=4, ge=1, le=20)
+    memory_update_interval: int = Field(default=4, ge=1, le=20)
+    memory_input_budget: int = Field(default=32000, ge=1, le=900000)
+    memory_context_budget: int = Field(default=8000, ge=1, le=100000)
+    memory_limit: int = Field(default=8, ge=1, le=32)
+    memory_max_output_tokens: int = Field(default=4096, ge=128, le=16384)
     timeout: float = Field(default=30, gt=0, le=120)
     retries: int = Field(default=2, ge=0, le=5)
     max_output_tokens: int = Field(default=2048, ge=128, le=16384)
@@ -49,6 +56,8 @@ class Settings(BaseModel):
     def check_compatibility(self):
         if self.model == "gpt-6.1-sol" and self.reasoning == "none":
             raise ValueError("gpt-6.1-sol does not support reasoning=none; use low or higher")
+        if self.memory_mode == 'hybrid' and self.memory_model == 'gpt-6.1-sol' and self.memory_reasoning == 'none':
+            raise ValueError('gpt-6.1-sol does not support memory_reasoning=none; use low or higher')
 
 
 class PlayerError(RuntimeError):
@@ -67,7 +76,7 @@ class BudgetExceeded(PlayerError):
     pass
 
 
-def create_model(settings, **client_options):
+def create_model(settings, *, schema=Decision, **client_options):
     settings.check_compatibility()
     model = ChatOpenAI(
         model=settings.model,
@@ -85,23 +94,23 @@ def create_model(settings, **client_options):
     # A JSON schema (rather than SDK-side Pydantic parsing) preserves raw refusal
     # and incomplete-status metadata so we can inspect it before local validation.
     return model.with_structured_output(
-        Decision.model_json_schema(), method="json_schema", strict=True, include_raw=True
+        schema.model_json_schema(), method="json_schema", strict=True, include_raw=True
     )
 
 
-def input_token_upper_bound(messages):
+def input_token_upper_bound(messages, schema=Decision):
     """Conservative UTF-8 byte bound plus schema/envelope allowance.
 
     Not an exact provider token count. Deliberately overestimates ordinary text,
     avoids downloading a tokenizer, and never truncates the full-history baseline.
     """
     payload = [{"role": message.type, "content": message.content} for message in messages]
-    serialized = json.dumps({"messages": payload, "schema": Decision.model_json_schema()}, ensure_ascii=False)
+    serialized = json.dumps({"messages": payload, "schema": schema.model_json_schema()}, ensure_ascii=False)
     return len(serialized.encode("utf-8")) + 1024
 
 
 class Player:
-    def __init__(self, engine, settings=None, model=None, *, sleep=time.sleep, persona=PERSONA):
+    def __init__(self, engine, settings=None, model=None, *, sleep=time.sleep, persona=PERSONA, memory_model=None):
         self.engine = engine
         self.settings = settings or Settings()
         self.settings.check_compatibility()
@@ -112,17 +121,89 @@ class Player:
         self.persona = persona
         self.session = None
         self.calls = []
+        self.memory_model = memory_model
 
     def messages(self):
+        if self.settings.memory_mode == 'hybrid':
+            return self.hybrid_context()[0]
         return [SystemMessage(content=self.persona), *self.history]
+
+    def hybrid_context(self):
+        from memory import context_message, retrieve
+        if self.session is None:
+            raise PlayerError('Hybrid memory requires a persisted run session.')
+        store, run_id = self.session.store, self.session.run_id
+        sources = store.sources(run_id)
+        pending = store.pending_sources(run_id)
+        # Preserve unprocessed older observations until extraction succeeds.
+        recent_start = max(0, len(sources) - self.settings.recent_turns - 1)
+        if pending:
+            recent_start = min(recent_start, pending[0]['turn'])
+        recent = self.history[2 * recent_start:]
+        selected = retrieve(store.memories(run_id), self.history[-1].content,
+                            limit=self.settings.memory_limit, budget=self.settings.memory_context_budget)
+        messages = [SystemMessage(content=self.persona)]
+        if selected:
+            messages.append(context_message(selected))
+        messages.extend(recent)
+        return messages, selected, [s['source_id'] for s in sources[recent_start:]]
+
+    def inspect_memory(self):
+        if self.settings.memory_mode != 'hybrid':
+            return {'mode': 'full-history', 'history': [{'role': m.type, 'content': m.content} for m in self.history]}
+        messages, selected, recent_ids = self.hybrid_context()
+        store, run_id = self.session.store, self.session.run_id
+        pending_ids = [s['source_id'] for s in store.pending_sources(run_id)]
+        due = len(pending_ids) >= self.settings.memory_update_interval or len(pending_ids) > self.settings.recent_turns + 1
+        contexts = [e['payload'] for e in store.events(run_id) if e['kind'] == 'context_selected']
+        return {'mode': 'hybrid', 'stored': store.memories(run_id), 'selected': selected,
+                'recent_source_ids': recent_ids, 'pending_source_ids': pending_ids, 'update_due': due,
+                'selection_stage': 'preview_before_update' if due else 'ready',
+                'last_context': contexts[-1] if contexts else None,
+                'input_estimate': input_token_upper_bound(messages)}
+
+    def update_memory(self):
+        from memory import MemoryBatch, extraction_messages, validate_batch
+        if self.session is None:
+            raise PlayerError('Hybrid memory requires a persisted run session.')
+        pending = self.session.store.pending_sources(self.session.run_id)
+        if len(pending) < self.settings.memory_update_interval and len(pending) <= self.settings.recent_turns + 1:
+            return
+        # One oldest-first batch per step; never truncate a source to make it fit.
+        sources = []
+        for source in pending[:self.settings.memory_update_interval]:
+            candidate = [*sources, source]
+            if input_token_upper_bound(extraction_messages(candidate), MemoryBatch) > self.settings.memory_input_budget:
+                break
+            sources = candidate
+        if not sources:
+            raise ContextBudgetExceeded('Next complete memory source exceeds memory input budget. No request sent; transcript preserved.')
+        messages = extraction_messages(sources)
+        settings = self.settings.model_copy(update={'model': self.settings.memory_model,
+            'reasoning': self.settings.memory_reasoning, 'max_output_tokens': self.settings.memory_max_output_tokens})
+        if self.memory_model is None:
+            self.memory_model = create_model(settings, schema=MemoryBatch)
+        batch = self._request(messages, self.memory_model, settings, MemoryBatch,
+                              lambda parsed: validate_batch(parsed, sources), purpose='memory', retries=0)
+        self.session.commit_memories(sources, batch)
 
     def _decision(self, messages):
         if self.model is None:
             self.model = create_model(self.settings)
-        for attempt in range(self.settings.retries + 1):
-            reservation = input_token_upper_bound(messages) + self.settings.max_output_tokens
+        def validate(parsed):
+            decision = Decision.model_validate(parsed)
+            if not decision.character_comment.strip():
+                raise ValueError('Empty character comment')
+            self.engine.validate_choice(decision.choice)
+            return decision
+        return self._request(messages, self.model, self.settings, Decision, validate,
+                             purpose='decision', retries=self.settings.retries)
+
+    def _request(self, messages, model, settings, schema, validate, *, purpose, retries):
+        for attempt in range(retries + 1):
+            reservation = input_token_upper_bound(messages, schema) + settings.max_output_tokens
             if self.session:
-                request_id = self.session.begin_request(self.settings, reservation, attempt + 1)
+                request_id = self.session.begin_request(settings, reservation, attempt + 1, purpose=purpose)
             else:
                 charged = sum(call.get('usage', {}).get('total_tokens', call['token_reservation'])
                               if call.get('usage') else call['token_reservation'] for call in self.calls)
@@ -130,15 +211,15 @@ class Player:
                     raise BudgetExceeded('Run request/token budget exhausted. No request sent.')
                 request_id = None
             started = time.monotonic()
-            metadata = {'model': self.settings.model, 'status': None, 'usage': None,
-                        'attempt': attempt + 1, 'category': 'unexpected_error'}
+            metadata = {'model': settings.model, 'status': None, 'usage': None,
+                        'attempt': attempt + 1, 'category': 'unexpected_error', 'purpose': purpose}
             try:
                 try:
-                    result = self.model.invoke(messages)
+                    result = model.invoke(messages)
                 except (openai.APIConnectionError, openai.RateLimitError, openai.InternalServerError) as error:
                     metadata['category'] = ('connection_or_timeout' if isinstance(error, openai.APIConnectionError)
                                             else 'rate_limit' if isinstance(error, openai.RateLimitError) else 'server_error')
-                    if attempt < self.settings.retries:
+                    if attempt < retries:
                         retry_delay = min(2 ** attempt, 4)
                         # Sleep after recording this failed attempt, below.
                     else:
@@ -149,7 +230,7 @@ class Player:
                     raise PlayerError(f'OpenAI rejected the request (HTTP {error.status_code}). Check model access, credentials, and settings. No action applied.') from error
                 except (ValueError, ValidationError) as error:
                     metadata['category'] = 'decode_error'
-                    if attempt == self.settings.retries:
+                    if attempt == retries:
                         raise PlayerError('OpenAI response could not be decoded; retries exhausted. No action applied.') from error
                     retry_delay = 0
                 except Exception as error:
@@ -162,7 +243,7 @@ class Player:
                     if not isinstance(raw, AIMessage):
                         metadata['category'] = 'missing_metadata'
                         raise PlayerError('Missing response metadata. No action applied.')
-                    metadata.update(model=raw.response_metadata.get('model_name', self.settings.model),
+                    metadata.update(model=raw.response_metadata.get('model_name', settings.model),
                                     status=raw.response_metadata.get('status'), usage=raw.usage_metadata)
                     blocks = raw.content if isinstance(raw.content, list) else []
                     if raw.additional_kwargs.get('refusal') or any(isinstance(block, dict) and block.get('type') == 'refusal' for block in blocks):
@@ -174,18 +255,15 @@ class Player:
                     try:
                         if result.get('parsing_error') or result.get('parsed') is None:
                             raise ValueError('Missing or malformed structured response')
-                        decision = Decision.model_validate(result['parsed'])
-                        if not decision.character_comment.strip():
-                            raise ValueError('Empty character comment')
-                        self.engine.validate_choice(decision.choice)
+                        validated = validate(result['parsed'])
                     except (ValueError, ValidationError) as error:
-                        metadata['category'] = 'invalid_decision'
-                        if attempt == self.settings.retries:
-                            raise PlayerError('Invalid structured decision or unavailable choice; retries exhausted. No action applied.') from error
+                        metadata['category'] = 'invalid_decision' if purpose == 'decision' else 'invalid_memory'
+                        if attempt == retries:
+                            raise PlayerError(f'Invalid structured {purpose} or unsupported source/choice; retries exhausted. No action applied.') from error
                         retry_delay = 0
                     else:
-                        metadata['category'] = 'valid_decision'
-                        return decision
+                        metadata['category'] = 'valid_decision' if purpose == 'decision' else 'valid_memory'
+                        return validated
             finally:
                 metadata['seconds'] = round(time.monotonic() - started, 3)
                 self.last_call = metadata
@@ -199,13 +277,18 @@ class Player:
     def step(self):
         if not self.engine.running:
             return None
+        if self.settings.memory_mode == 'hybrid':
+            self.update_memory()
         messages = self.messages()
         upper_bound = input_token_upper_bound(messages)
         if upper_bound > self.settings.context_budget:
             raise ContextBudgetExceeded(
-                f"Full-history input estimate {upper_bound} exceeds context budget {self.settings.context_budget}. "
-                "No request sent; history was not truncated."
+                f"{self.settings.memory_mode} input estimate {upper_bound} exceeds context budget {self.settings.context_budget}. "
+                "No decision request sent; transcript preserved."
             )
+        if self.settings.memory_mode == 'hybrid':
+            _, selected, recent_ids = self.hybrid_context()
+            self.session.record_context(selected, recent_ids, upper_bound)
         decision = self._decision(messages)
         # The engine's transaction can still fail (unsupported destination syntax).
         # Record a decision only after its action has succeeded.

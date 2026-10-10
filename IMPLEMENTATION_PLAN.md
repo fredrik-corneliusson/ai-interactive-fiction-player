@@ -2,8 +2,8 @@
 
 Created: 2026-10-10 (Europe/Stockholm)
 Last updated: 2026-10-10
-Status: CP1, CP2, and CP3 complete for their documented scopes.
-Next checkpoint: CP4 — hybrid memory, extraction, and retrieval.
+Status: CP1 through CP4 complete for their documented scopes.
+Next checkpoint: CP5 — comparative model and memory evaluation.
 
 ## Purpose and scope
 
@@ -158,7 +158,7 @@ event log even if a character memory policy intentionally forgets information.
 | CP1 — engine and fixtures | Complete | Reliable turn behavior and representative story fixtures |
 | CP2 — modern full-history player | Complete | Responses API, explicit configuration, structured decisions |
 | CP3 — persistence and observability | Complete | Save/resume, event log, usage and latency reporting |
-| CP4 — hybrid memory | Not started | Batched extraction, retrieval, inspectable derived memories |
+| CP4 — hybrid memory | Complete | Batched extraction, retrieval, inspectable derived memories |
 | CP5 — comparative evaluation | Not started | Model/memory comparison and justified defaults |
 | CP6 — documentation and handoff | Not started | Reproducible setup, CLI guide, validated dependency lock |
 
@@ -291,11 +291,29 @@ interrupted requests require explicit acknowledgment. All 48 offline tests and
 pip check pass; no additional paid API requests were made. The CP3 Git checkpoint
 is titled `Complete CP3 persistence and observability milestone`.
 
-Next action: implement CP4 source-linked hybrid memory, batched extraction,
-retrieval, and inspectable selected records. Use encountered observations in the
-event log as sources; exclude hidden state and unvisited story text, and preserve
-the full transcript and CP3 persistence/budget guarantees. Full-history remains
-the comparison baseline.
+CP4 completed on 2026-10-10. See [CP4_VALIDATION.md](CP4_VALIDATION.md) for the
+schema, update/retrieval policies, evidence, and limitations. Hybrid memory uses
+recent verbatim experience and bounded event/entity/intention records with exact
+run-scoped citations and explicit observation/belief/interpretation labels.
+Extraction batches four new sources by default, earlier before recent context
+would lose an unprocessed source, with at most one extraction request per step
+and no automatic extraction retries. Defaults: four recent turn pairs; 32000
+extractor input estimate; 4096 extractor output tokens; eight recalled records
+within 8000 JSON bytes. Decision input still has the overall context budget.
+Retrieval ranks lexical overlap, entity matches, salience, and intentions, with
+recency tie-breaking. No embeddings or automated forgetting are introduced.
+Contradictions are preserved; exact source validation does not prove semantic
+accuracy of an interpretation. SQLite version 2 preserves CP3 runs and adds
+append-only records, batch progress, and selected-context logs. All 69 tests and
+pip check pass in Git Bash; no paid requests were made. The CP4 Git checkpoint
+is titled `Complete CP4 hybrid memory milestone`.
+
+Next action: implement CP5 reproducible full-history/hybrid comparison on fixed
+encountered-history fixtures, using repeated trials where practical. First confirm
+live memory-schema acceptance, then measure recall/source fidelity, contradictions,
+invented memories, valid decisions, Swedish characterization, refusals, usage,
+and latency. Retain the original transcript, hidden/unvisited-data boundaries,
+and CP3 persisted budgets. Full-history stays the default pending evidence.
 
 | Date | Checkpoint | Work and evidence | Remaining work |
 | --- | --- | --- | --- |
@@ -305,6 +323,7 @@ the comparison baseline.
 | 2026-10-10 | CP1 | Implemented engine/CLI fixes and limited Harlowe support; 18 offline tests, 11 browser cases, and 6,822 audit checks pass. Added persistent reference fixtures and CP1_VALIDATION.md. | CP2 Responses/full-history integration; exhaustive playthrough coverage remains outside CP1 validation. |
 | 2026-10-10 | CP2 | Replaced classic chain/entity memory with Responses, strict structured decisions, explicit settings, bounded errors/retries, full-history context budgeting, and bounded CLI runs. 32 tests and pip check pass; four live Luna requests succeeded. Removed unused dependencies and refreshed the lock. | CP3 persistence and complete usage accounting; Sol access and roleplay comparisons remain untested. |
 | 2026-10-10 | CP3 | Added SQLite checkpoints and append-only events; story/persona/settings/transcript/RNG save and resume; atomic actions, revision protection, per-attempt usage/latency/error logs, persistent request/token budgets, and explicit interruption recovery. 48 offline tests and pip check pass. Added CP3_VALIDATION.md and CLI documentation. No paid calls. Git checkpoint: `Complete CP3 persistence and observability milestone`. | CP4 hybrid memory, batched extraction, source-linked retrieval, and inspection. |
+| 2026-10-10 | CP4 | Implemented hybrid recent/retrieved context; batched strict memory extraction; exact source/quote validation; separate observations, beliefs, and interpretations; deterministic bounded retrieval; append-only SQLite records and progress; shared budgets and purpose telemetry; m/h inspection and Git Bash guide. 69 tests and pip check pass. Added CP4_VALIDATION.md. No paid calls. Git checkpoint: `Complete CP4 hybrid memory milestone`. | CP5 live schema acceptance and comparative evaluation; memory and roleplay quality remain unbenchmarked. |
 
 ## How to update this reference
 
