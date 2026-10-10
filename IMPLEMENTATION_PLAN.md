@@ -315,6 +315,15 @@ invented memories, valid decisions, Swedish characterization, refusals, usage,
 and latency. Retain the original transcript, hidden/unvisited-data boundaries,
 and CP3 persisted budgets. Full-history stays the default pending evidence.
 
+Post-CP4 console fix (2026-10-10): added explicit interactive help and long-name,
+case-insensitive, and slash-prefixed command aliases; retained existing shortcuts.
+Memory inspection identifies full-history mode and explains an empty hybrid store.
+Documented interactive versus `--max-steps` behavior and strict `run N` arguments.
+All 74 offline tests pass in Git Bash. A real Git Bash stdin smoke exercised help,
+memory, history, variables, usage, save, and exit with zero model requests.
+Git checkpoint: `Restore console help and command aliases`.
+CP5 remains the next checkpoint.
+
 | Date | Checkpoint | Work and evidence | Remaining work |
 | --- | --- | --- | --- |
 | 2026-10-10 | CP0 | Created Python 3.13.2 `.venv`; installed dependencies; `pip check` passed; verified imports, offline classic-chain execution, synthetic navigation, and manual CLI startup/quit. | Replace legacy architecture and add meaningful regression tests. |

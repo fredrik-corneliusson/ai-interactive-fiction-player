@@ -178,18 +178,26 @@ for Part 1. Supported console syntax and verification limits are documented in
 ## Console commands
 
 Manual play: enter a numbered choice, `v` to inspect variables and interpreter
-notices, or `q` to quit. Both modes stop at passages without story choices.
+notices, or `q` to quit. `help`/`?`, `vars`/`variables`, and `quit`/`exit` also work.
+Both modes stop at passages without story choices.
 
 AI play:
 
+- `help`, `?`, `/help`, or `--help`: show interactive console help.
 - Enter: ask the AI to choose the next action.
-- `r #`: automatically run the requested number of steps.
-- `m`: inspect hybrid memories and selection; in full-history mode, show history.
-- `h`: show the complete encountered history and committed decisions in either mode.
-- `v`: show variables and the current passage.
-- `u`: show cumulative request, token, and latency accounting.
-- `s`: explicitly save the current checkpoint (actions already save automatically).
-- `q`: quit.
+- `r N`, `run N`, or `autorun N`: run N steps, then return to the prompt.
+- `m` or `memory`: inspect hybrid memories and selection; in full-history mode, show history.
+- `h` or `history`: show the complete encountered history and committed decisions in either mode.
+- `v`, `vars`, or `variables`: show variables and the current passage.
+- `u` or `usage`: show cumulative request, token, and latency accounting.
+- `s` or `save`: explicitly save the current checkpoint (actions already save automatically).
+- `q`, `quit`, or `exit`: quit.
+
+Commands are case-insensitive and accept slash prefixes, such as `/memory`.
+Inspection and help commands do not advance the game or make API requests.
+Use `ai_player.py` without `--max-steps` for interactive commands; `--max-steps`
+runs automatically without reading console input. During `r N` autorun, commands
+are available again once the requested steps finish, unless the game ends first.
 
 ## Saved runs and budgets
 

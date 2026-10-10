@@ -12,6 +12,27 @@ from player import Player, PlayerError, Settings
 from run_store import RunStore, StoreError
 
 
+CONSOLE_HELP = """Console commands:
+  help, ?, /help, --help   Show this help.
+  m, memory               Inspect memories (or transcript in full-history mode).
+  h, history              Show the complete encountered transcript.
+  v, vars, variables      Show the current passage, variables, and notices.
+  u, usage                Show cumulative request/token/latency usage.
+  s, save                 Save the current checkpoint.
+  r N, run N, autorun N    Run N AI steps, then return to the prompt.
+  q, quit, exit           Quit; committed actions are already saved.
+  Enter                   Ask the AI to take one step.
+Commands are case-insensitive; slash prefixes such as /memory also work.
+--max-steps runs without interactive prompts. Omit it to use these commands.
+"""
+
+COMMAND_ALIASES = {
+    '?': 'help', '--help': 'help', 'memory': 'm', 'history': 'h',
+    'vars': 'v', 'variables': 'v', 'usage': 'u', 'save': 's',
+    'run': 'r', 'autorun': 'r', 'quit': 'q', 'exit': 'q',
+}
+
+
 def out(*messages):
     text = " ".join(str(message) for message in messages)
     print("\n".join(textwrap.fill(line, 100) for line in text.split("\n")))
@@ -19,6 +40,8 @@ def out(*messages):
 
 def play(engine, player, *, max_steps=None, debug=False):
     out(player.history[-1].content)
+    if engine.running and max_steps is None:
+        out('Type help for console commands, or press Enter for one AI step.')
     completed = 0
     runs = max_steps or 0
     while engine.running:
@@ -32,12 +55,25 @@ def play(engine, player, *, max_steps=None, debug=False):
                 user_input = input("> ").strip()
             except EOFError:
                 break
+        parts = user_input.split()
+        command = parts[0].casefold().removeprefix('/') if parts else ''
+        user_input = COMMAND_ALIASES.get(command, command)
+        if len(parts) > 1 and user_input != 'r':
+            out('This command takes no arguments. Type help for console commands.')
+            continue
+        if user_input == 'help':
+            out(CONSOLE_HELP)
+            continue
         if user_input == "q":
             break
         if user_input == "m":
             if player.settings.memory_mode == 'hybrid':
-                out(json.dumps(player.inspect_memory(), ensure_ascii=False, indent=2))
+                memory = player.inspect_memory()
+                if not memory['stored']:
+                    out('No extracted memory records yet. Pending sources will be processed when an update is due.')
+                out(json.dumps(memory, ensure_ascii=False, indent=2))
             else:
+                out('Memory mode: full-history. Showing the complete encountered transcript.')
                 for message in player.history:
                     out(f"{message.type}: {message.content}")
             continue
@@ -54,15 +90,21 @@ def play(engine, player, *, max_steps=None, debug=False):
         if user_input == 'u':
             if player.session:
                 out(json.dumps(player.session.store.usage(player.session.run_id), ensure_ascii=False))
+            else:
+                out('Usage reporting requires a saved run.')
             continue
         if user_input == 's':
             if player.session:
                 player.session.checkpoint(player)
                 out(f'Saved run {player.session.run_id}')
+            else:
+                out('Saving requires a persisted run session.')
             continue
-        if user_input.startswith("r "):
+        if user_input == 'r':
             try:
-                runs = int(user_input.split()[-1])
+                if len(parts) != 2:
+                    raise ValueError('Use r N or run N with one positive step count.')
+                runs = int(parts[1])
                 if runs < 1:
                     raise ValueError("Autorun steps must be positive")
             except ValueError as error:
@@ -70,7 +112,7 @@ def play(engine, player, *, max_steps=None, debug=False):
                 out(error)
             continue
         if user_input != "":
-            out("Choose v, m, h, u, s, r #, q, or press Enter to continue.")
+            out('Unknown command. Type help for console commands, or press Enter for one AI step.')
             continue
         try:
             decision = player.step()

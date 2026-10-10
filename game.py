@@ -167,8 +167,14 @@ class GameEngine:
                 action = input("> ").strip()
             except EOFError:
                 return "q"
-            if action.lower() in ("q", "v"):
-                return action.lower()
+            command = action.casefold().removeprefix('/')
+            if command in ('help', '?', '--help'):
+                print('Enter a numbered choice; v/vars/variables shows state; q/quit/exit quits. Commands are case-insensitive.')
+                continue
+            if command in ('q', 'quit', 'exit'):
+                return 'q'
+            if command in ('v', 'vars', 'variables'):
+                return 'v'
             try:
                 choice = int(action)
                 self.validate_choice(choice)

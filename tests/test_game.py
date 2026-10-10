@@ -130,6 +130,15 @@ class EngineTests(unittest.TestCase):
 
 
 class BrowserFixtureTests(unittest.TestCase):
+    def test_manual_prompt_help_and_state_aliases_do_not_advance(self):
+        engine = GameEngine(Game(story('[[Go|1]]', 'End')))
+        with patch('builtins.input', side_effect=['/HELP', '?', 'VARIABLES']), patch('builtins.print') as output:
+            self.assertEqual(engine.prompt(), 'v')
+        self.assertEqual(output.call_count, 2)
+        self.assertEqual(engine.game._current, '0')
+        with patch('builtins.input', return_value='EXIT'):
+            self.assertEqual(engine.prompt(), 'q')
+
     def test_encountered_history_has_valid_actions_and_stops_at_fixture_boundary(self):
         traces = json.loads((FIXTURES / 'encountered_history.json').read_text(encoding='utf-8'))
         self.assertEqual({trace['part'] for trace in traces}, {'del1', 'del2'})

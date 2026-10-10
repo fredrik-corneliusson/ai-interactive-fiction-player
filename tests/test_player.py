@@ -199,6 +199,44 @@ class TransportTests(unittest.TestCase):
 
 
 class ConsoleTests(unittest.TestCase):
+    def test_help_memory_and_history_aliases_do_not_invoke_model(self):
+        model = Mock()
+        player = Player(engine(), model=model)
+        commands = ['help', '?', '/HELP', '--help', 'm', 'MEMORY', '/memory',
+                    'h', 'HISTORY', '/history', 'v', 'VARS', '/variables', 'QUIT']
+        before = list(player.history)
+        with patch('builtins.input', side_effect=commands), contextlib.redirect_stdout(io.StringIO()) as output:
+            self.assertEqual(play(player.engine, player), 0)
+        model.invoke.assert_not_called()
+        text = output.getvalue()
+        self.assertNotIn('Unknown command', text)
+        self.assertIn('Console commands:', text)
+        self.assertIn('Memory mode: full-history', text)
+        self.assertIn('human:', text)
+        self.assertEqual(player.history, before)
+        self.assertEqual(player.engine.game._current, 'Start')
+
+    def test_run_alias_returns_to_prompt_for_help_and_inspection(self):
+        model = Mock()
+        model.invoke.return_value = result()
+        player = Player(engine(destination='Second [[Again|Start]]'), model=model)
+        with patch('builtins.input', side_effect=['/RUN\t1', 'help', 'memory', 'exit']), contextlib.redirect_stdout(io.StringIO()) as output:
+            self.assertEqual(play(player.engine, player), 1)
+        model.invoke.assert_called_once()
+        self.assertIn('Console commands:', output.getvalue())
+        self.assertNotIn('Unknown command', output.getvalue())
+        self.assertEqual(player.engine.game._current, 'End')
+
+    def test_bad_command_arguments_never_advance_or_start_autorun(self):
+        model = Mock()
+        player = Player(engine(), model=model)
+        with patch('builtins.input', side_effect=['run', 'run 0', 'run 1 extra', 'memory extra', 'nonsense', 'exit']), contextlib.redirect_stdout(io.StringIO()) as output:
+            self.assertEqual(play(player.engine, player), 0)
+        model.invoke.assert_not_called()
+        self.assertIn('Use r N or run N', output.getvalue())
+        self.assertIn('This command takes no arguments', output.getvalue())
+        self.assertIn('Unknown command', output.getvalue())
+
     def test_autorun_stops_at_ending(self):
         game = engine(destination='(set: $count to $count +1)Finished')
         model = Mock()

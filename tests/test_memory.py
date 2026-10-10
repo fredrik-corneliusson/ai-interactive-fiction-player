@@ -310,6 +310,28 @@ class MemoryTests(unittest.TestCase):
         player.model.invoke.assert_not_called()
         player.memory_model.invoke.assert_not_called()
 
+    def test_all_inspection_and_save_aliases_work_with_hybrid_memory(self):
+        player = self.player()
+        source = self.store.sources(player.session.run_id)[0]
+        player.session.commit_memories([source], validate_batch({'records': [record(source, 'Jenny lives here.')]}, [source]))
+        before = snapshot(player)
+        commands = ['HELP', '/help', '?', '--help', 'm', 'memory', '/MEMORY',
+                    'h', 'history', '/HISTORY', 'v', 'vars', '/VARIABLES',
+                    'u', 'usage', '/USAGE', 's', 'save', '/SAVE', 'EXIT']
+        with patch('builtins.input', side_effect=commands), contextlib.redirect_stdout(io.StringIO()) as output:
+            self.assertEqual(play(player.engine, player), 0)
+        text = output.getvalue()
+        self.assertIn('Console commands:', text)
+        self.assertIn('selected', text)
+        self.assertIn('Jenny lives here.', text)
+        self.assertIn('Saved run', text)
+        self.assertNotIn('Unknown command', text)
+        self.assertEqual(snapshot(player), before)
+        self.assertEqual(self.store.usage(player.session.run_id)['requests'], 0)
+        self.assertEqual(self.store.usage(player.session.run_id)['actions'], 0)
+        player.model.invoke.assert_not_called()
+        player.memory_model.invoke.assert_not_called()
+
     def test_real_memory_schema_responses_transport_and_usage(self):
         requests = []
         settings = Settings(memory_mode='hybrid', memory_update_interval=1, retries=0)
